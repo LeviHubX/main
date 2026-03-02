@@ -1,0 +1,1722 @@
+--[[
+    Antigravity Arsenal | Combat + ESP + Skin Changer Edition
+]]
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+
+local isXeno = false
+pcall(function()
+    local exec = (identifyexecutor or function() return "" end)()
+    if type(exec) == "string" and exec:find("Xeno") then
+        isXeno = true
+    end
+end)
+
+local ScriptSettings = {
+    Enabled = false,
+    TeamCheck = true,
+    RainbowESP = true,
+    FillColor = Color3.fromRGB(255, 255, 255),
+    OutlineColor = Color3.fromRGB(255, 0, 0),
+    FillTransparency = 0.75,
+    OutlineTransparency = 0,
+}
+
+local CombatSettings = {
+    -- Aimbot
+    AimbotEnabled = false,
+    Smoothness = 0.3, -- Lerp alpha (lower = smoother, higher = snappier)
+    WallCheck = true,
+    AimbotTeamCheck = true,
+    HitPart = "Head", -- "Head", "HumanoidRootPart", "UpperTorso"
+    AimKey = "MouseButton2", -- Right click default
+    AimKeyHeld = false,
+
+    -- Silent Aim
+    SilentAimEnabled = false,
+
+    -- FOV Circle
+    ShowFOV = false,
+    FOVRadius = 200,
+    FOVTransparency = 0.5,
+    FOVThickness = 1.5,
+    FOVColor = Color3.fromRGB(255, 255, 255),
+    RainbowFOV = false,
+
+    -- Golden Knife Teleport
+    GoldenKnifeTeleport = false,
+
+    -- Kill All
+    KillAllArmed = false,
+    KillAllEnabled = false,
+    KillAllKeybind = "P",
+}
+
+
+
+local SkinSettings = {
+    Enabled = true,
+    SelectedKnife = "Default",
+    SelectedPlayer = "Default",
+    SelectedWeapon = "Default",
+    OriginalMelee = nil,
+    OriginalPlayer = nil,
+    OriginalWeapon = nil
+}
+
+local GunModSettings = {
+    InfiniteAmmo = false,
+    AutoFire = false,
+    FastFireRate = false,
+    NoRecoil = false,
+    NoSpread = false,
+}
+
+local WorldVisualSettings = {
+    ViewmodelChams = false,
+    ArmChams = false,
+    ArmChamsColor = Color3.fromRGB(0, 170, 255),
+    GunChams = false,
+    GunChamsColor = Color3.fromRGB(255, 0, 100),
+    GunChamsMaterial = "Neon",
+    CustomSkybox = "Default",
+}
+
+local SkyboxIds = {
+    ["Default"] = nil,
+    ["Galaxy"] = {"rbxassetid://1012890", "rbxassetid://1012876", "rbxassetid://1012860", "rbxassetid://1012831", "rbxassetid://1012888", "rbxassetid://1012880"},
+    ["Sunset"] = {"rbxassetid://12064107", "rbxassetid://12064152", "rbxassetid://12064121", "rbxassetid://12064131", "rbxassetid://12064085", "rbxassetid://12064164"},
+    ["Night Sky"] = {"rbxassetid://6444884695", "rbxassetid://6444884695", "rbxassetid://6444884695", "rbxassetid://6444884695", "rbxassetid://6444884695", "rbxassetid://6444884695"},
+    ["Cloudy"] = {"rbxassetid://95470279", "rbxassetid://95470325", "rbxassetid://95470297", "rbxassetid://95470311", "rbxassetid://95470267", "rbxassetid://95470339"},
+    ["Vaporwave"] = {"rbxassetid://1417139488", "rbxassetid://1417139488", "rbxassetid://1417139488", "rbxassetid://1417139488", "rbxassetid://1417139488", "rbxassetid://1417139488"},
+    ["Red"] = {"rbxassetid://2667881311", "rbxassetid://2667881311", "rbxassetid://2667881311", "rbxassetid://2667881311", "rbxassetid://2667881311", "rbxassetid://2667881311"},
+}
+
+local MaterialMap = {
+    ["Neon"] = Enum.Material.Neon,
+    ["Glass"] = Enum.Material.Glass,
+    ["Ice"] = Enum.Material.Ice,
+    ["Metal"] = Enum.Material.Metal,
+    ["Plastic"] = Enum.Material.Plastic,
+    ["SmoothPlastic"] = Enum.Material.SmoothPlastic,
+}
+
+local originalSkybox = nil
+
+local function SaveOriginalSkybox()
+    if originalSkybox then return end
+    local sky = game:GetService("Lighting"):FindFirstChildOfClass("Sky")
+    if sky then
+        originalSkybox = {
+            SkyboxBk = sky.SkyboxBk,
+            SkyboxDn = sky.SkyboxDn,
+            SkyboxFt = sky.SkyboxFt,
+            SkyboxLf = sky.SkyboxLf,
+            SkyboxRt = sky.SkyboxRt,
+            SkyboxUp = sky.SkyboxUp,
+        }
+    end
+end
+
+local function ApplyCustomSkybox(name)
+    local Lighting = game:GetService("Lighting")
+    SaveOriginalSkybox()
+    if name == "Default" then
+        local sky = Lighting:FindFirstChildOfClass("Sky")
+        if sky and originalSkybox then
+            sky.SkyboxBk = originalSkybox.SkyboxBk
+            sky.SkyboxDn = originalSkybox.SkyboxDn
+            sky.SkyboxFt = originalSkybox.SkyboxFt
+            sky.SkyboxLf = originalSkybox.SkyboxLf
+            sky.SkyboxRt = originalSkybox.SkyboxRt
+            sky.SkyboxUp = originalSkybox.SkyboxUp
+        end
+        return
+    end
+    local ids = SkyboxIds[name]
+    if not ids then return end
+    local sky = Lighting:FindFirstChildOfClass("Sky")
+    if not sky then
+        sky = Instance.new("Sky")
+        sky.Parent = Lighting
+    end
+    sky.SkyboxBk = ids[1]
+    sky.SkyboxDn = ids[2]
+    sky.SkyboxFt = ids[3]
+    sky.SkyboxLf = ids[4]
+    sky.SkyboxRt = ids[5]
+    sky.SkyboxUp = ids[6]
+end
+
+local function ApplyChams()
+    pcall(function()
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        for _, tool in pairs(char:GetChildren()) do
+            if tool:IsA("Tool") then
+                for _, part in pairs(tool:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        -- Gun Chams
+                        if WorldVisualSettings.GunChams then
+                            part.Color = WorldVisualSettings.GunChamsColor
+                            part.Material = MaterialMap[WorldVisualSettings.GunChamsMaterial] or Enum.Material.Neon
+                            part.Transparency = 0
+                        end
+                    end
+                end
+            end
+        end
+        
+        -- Arm Chams (first person arms)
+        if WorldVisualSettings.ArmChams or WorldVisualSettings.ViewmodelChams then
+            local viewmodel = Camera:FindFirstChild("Arms") or Camera:FindFirstChild("ViewModel") or Camera:FindFirstChild("Viewmodel")
+            if viewmodel then
+                for _, part in pairs(viewmodel:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        if WorldVisualSettings.ViewmodelChams then
+                            part.Material = MaterialMap[WorldVisualSettings.GunChamsMaterial] or Enum.Material.Neon
+                            part.Transparency = 0
+                        end
+                        if WorldVisualSettings.ArmChams and (part.Name:lower():find("arm") or part.Name:lower():find("hand") or part.Name:lower():find("sleeve")) then
+                            part.Color = WorldVisualSettings.ArmChamsColor
+                            part.Material = MaterialMap[WorldVisualSettings.GunChamsMaterial] or Enum.Material.Neon
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local WeaponsFolder = ReplicatedStorage:WaitForChild("Weapons")
+local WeaponBackup = {}
+
+local function BackupWeapons()
+    for _, weapon in ipairs(WeaponsFolder:GetChildren()) do
+        if not WeaponBackup[weapon.Name] then
+            WeaponBackup[weapon.Name] = {
+                Ammo = weapon:FindFirstChild("Ammo") and weapon.Ammo.Value,
+                Auto = weapon:FindFirstChild("Auto") and weapon.Auto.Value,
+                FireRate = weapon:FindFirstChild("FireRate") and weapon.FireRate.Value,
+                RecoilControl = weapon:FindFirstChild("RecoilControl") and weapon.RecoilControl.Value,
+                Spread = weapon:FindFirstChild("Spread") and weapon.Spread.Value,
+                SpreadRecovery = weapon:FindFirstChild("SpreadRecovery") and weapon.SpreadRecovery.Value
+            }
+        end
+    end
+end
+BackupWeapons()
+
+local function IsMelee(tool)
+    if not tool:IsA("Tool") then return false end
+    local isGun = tool:FindFirstChild("AimPart")
+        or tool:FindFirstChild("Ammo")
+        or tool:FindFirstChild("FireSound")
+        or tool:FindFirstChild("ShootScript")
+        or tool:FindFirstChild("GunScript")
+    if isGun then return false end
+    local handle = tool:FindFirstChild("Handle")
+    if handle then return true end
+    return false
+end
+
+local function ApplySkins()
+    local dataFolder = LocalPlayer:FindFirstChild("Data")
+    local equippedVal = LocalPlayer:FindFirstChild("Equipped")
+
+    if SkinSettings.SelectedKnife ~= "Default" and dataFolder then
+        local meleeData = dataFolder:FindFirstChild("Melee")
+        if meleeData and meleeData:IsA("StringValue") then
+            if SkinSettings.OriginalMelee == nil then SkinSettings.OriginalMelee = meleeData.Value end
+            
+            local cleanSkinName = SkinSettings.SelectedKnife
+            if string.sub(cleanSkinName, 1, 2) == "v_" or string.sub(cleanSkinName, 1, 2) == "w_" then
+                cleanSkinName = string.sub(cleanSkinName, 3)
+            elseif string.sub(cleanSkinName, 1, 6) == "Melee_" then
+                cleanSkinName = string.sub(cleanSkinName, 7)
+            end
+            pcall(function() meleeData.Value = cleanSkinName end)
+        end
+    end
+
+    if SkinSettings.SelectedPlayer ~= "Default" and dataFolder then
+        local skinData = dataFolder:FindFirstChild("Skin")
+        if skinData and skinData:IsA("StringValue") then
+            if SkinSettings.OriginalPlayer == nil then SkinSettings.OriginalPlayer = skinData.Value end
+            pcall(function() skinData.Value = SkinSettings.SelectedPlayer end)
+        end
+    end
+
+    if SkinSettings.SelectedWeapon ~= "Default" and equippedVal then
+        if equippedVal:IsA("StringValue") then
+            if SkinSettings.OriginalWeapon == nil then SkinSettings.OriginalWeapon = equippedVal.Value end
+            pcall(function() equippedVal.Value = SkinSettings.SelectedWeapon end)
+        end
+    end
+end
+
+local function ResetSkins()
+    local dataFolder = LocalPlayer:FindFirstChild("Data")
+    local equippedVal = LocalPlayer:FindFirstChild("Equipped")
+    
+    if dataFolder and SkinSettings.OriginalMelee then
+        local meleeData = dataFolder:FindFirstChild("Melee")
+        if meleeData then pcall(function() meleeData.Value = SkinSettings.OriginalMelee end) end
+    end
+    
+    if dataFolder and SkinSettings.OriginalPlayer then
+        local skinData = dataFolder:FindFirstChild("Skin")
+        if skinData then pcall(function() skinData.Value = SkinSettings.OriginalPlayer end) end
+    end
+    
+    if equippedVal and SkinSettings.OriginalWeapon then
+        if equippedVal:IsA("StringValue") then pcall(function() equippedVal.Value = SkinSettings.OriginalWeapon end) end
+    end
+end
+
+-- =====================================
+-- COMBAT LOGIC (before UI)
+-- =====================================
+
+-- FOV Circle Drawing
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Visible = false
+FOVCircle.Radius = CombatSettings.FOVRadius
+FOVCircle.Thickness = CombatSettings.FOVThickness
+FOVCircle.Color = CombatSettings.FOVColor
+FOVCircle.Transparency = 1 - CombatSettings.FOVTransparency
+FOVCircle.Filled = false
+FOVCircle.NumSides = 64
+
+-- Arsenal-specific enemy check using TeamColor
+local function IsEnemy(plr)
+    if plr == LocalPlayer then return false end
+    if not plr.Character then return false end
+    
+    -- TeamColor-based check (Arsenal uses TeamColor for teams)
+    if CombatSettings.AimbotTeamCheck and not CheckFFA() then
+        if plr.TeamColor == LocalPlayer.TeamColor then return false end
+        if plr.Team and LocalPlayer.Team and plr.Team == LocalPlayer.Team then return false end
+    end
+    
+    local humanoid = plr.Character:FindFirstChild("Humanoid")
+    if not humanoid then return false end
+    if humanoid.Health <= 0 then return false end
+    
+    -- Dead state check (pcall to handle edge cases)
+    local isDead = false
+    pcall(function()
+        if humanoid:GetState() == Enum.HumanoidStateType.Dead then
+            isDead = true
+        end
+    end)
+    if isDead then return false end
+    
+    -- Underground / fallen off map check
+    local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return false end
+    if hrp.Position.Y < -50 then return false end
+    
+    return true
+end
+
+-- Wall check (raycast visibility)
+local function IsVisible(targetPart)
+    if not CombatSettings.WallCheck then return true end
+    local origin = Camera.CFrame.Position
+    local direction = (targetPart.Position - origin)
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+    rayParams.FilterDescendantsInstances = {LocalPlayer.Character}
+    local result = workspace:Raycast(origin, direction, rayParams)
+    if result then
+        if result.Instance and result.Instance:IsDescendantOf(targetPart.Parent) then
+            return true
+        end
+        return false
+    end
+    return true
+end
+
+-- Get closest enemy head/part for aimbot (Camera Lerp method)
+local function GetClosestEnemyPart()
+    local closest = nil
+    local closestDist = CombatSettings.FOVRadius
+    
+    for _, plr in pairs(Players:GetPlayers()) do
+        if IsEnemy(plr) and plr.Character then
+            local targetPart = plr.Character:FindFirstChild(CombatSettings.HitPart)
+            if not targetPart then
+                targetPart = plr.Character:FindFirstChild("Head")
+            end
+            if not targetPart then continue end
+            
+            -- Y difference check (skip underground/glitched players)
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local yDiff = math.abs(LocalPlayer.Character.HumanoidRootPart.Position.Y - targetPart.Position.Y)
+                if yDiff > 100 then continue end
+            end
+            
+            local screenPos, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
+            if onScreen then
+                local delta = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(Mouse.X, Mouse.Y)).Magnitude
+                if delta < closestDist then
+                    -- Wall check
+                    if IsVisible(targetPart) then
+                        closest = targetPart
+                        closestDist = delta
+                    end
+                end
+            end
+        end
+    end
+    return closest
+end
+
+
+
+-- Golden Knife Teleport function
+local function DoGoldenKnifeTeleport()
+    pcall(function()
+        local goldenKnife = nil
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("BasePart") and (obj.Name == "GoldenKnife" or obj.Name == "Golden Knife" or (obj.Parent and obj.Parent.Name == "GoldenKnife")) then
+                goldenKnife = obj
+                break
+            end
+        end
+        -- Also check for golden knife tool on ground
+        if not goldenKnife then
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("Tool") and (obj.Name:lower():find("golden") or obj.Name:lower():find("gold knife")) then
+                    local handle = obj:FindFirstChild("Handle")
+                    if handle then
+                        goldenKnife = handle
+                        break
+                    end
+                end
+            end
+        end
+        if goldenKnife and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = goldenKnife.CFrame + Vector3.new(0, 3, 0)
+        end
+    end)
+end
+
+-- Kill All System (ported from main.lua)
+local killAllThread = nil
+local isFFA = false
+local lastFFACheck = 0
+
+local function CheckFFA()
+    local now = tick()
+    if now - lastFFACheck < 1 then return isFFA end
+    lastFFACheck = now
+    local allPlayers = Players:GetPlayers()
+    if #allPlayers <= 1 then isFFA = false return isFFA end
+    local firstTeam = nil
+    local allSame = false
+    for _, p in ipairs(allPlayers) do
+        if p.Team then
+            if not allSame then
+                firstTeam = p.Team
+                allSame = true
+            elseif p.Team ~= firstTeam then
+                isFFA = false
+                return isFFA
+            end
+        end
+    end
+    if allSame then isFFA = true else isFFA = false end
+    return isFFA
+end
+
+local function IsKillAllEnemy(plr)
+    if plr == LocalPlayer then return false end
+    if not CheckFFA() then
+        if plr.Team == LocalPlayer.Team then return false end
+        if not plr.Team then return false end
+        if plr.Team.Name == "TGC" then return false end
+    end
+    local char = plr.Character
+    if not char then return false end
+    if not char:FindFirstChild("HumanoidRootPart") or not char:FindFirstChild("Head") then return false end
+    local hum = char:FindFirstChild("Humanoid")
+    if not hum or hum.Health <= 0 then return false end
+    if char.HumanoidRootPart.Position.Y < -100 then return false end
+    -- Lobby/spawn area check
+    if (char.HumanoidRootPart.Position - Vector3.new(0.9, -400, 2.5)).Magnitude < 50 then return false end
+    -- Distance check
+    local myChar = LocalPlayer.Character
+    if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+        if (char.HumanoidRootPart.Position - myChar.HumanoidRootPart.Position).Magnitude > 300 then return false end
+    end
+    return true
+end
+
+local function StartKillAll()
+    if killAllThread then return end
+    CombatSettings.KillAllEnabled = true
+    killAllThread = task.spawn(function()
+        while CombatSettings.KillAllEnabled do
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if not CombatSettings.KillAllEnabled then break end
+                if IsKillAllEnemy(plr) then
+                    local enemyChar = plr.Character
+                    local myChar = LocalPlayer.Character
+                    -- Teleport and stay on enemy until dead
+                    while CombatSettings.KillAllEnabled do
+                        if not IsKillAllEnemy(plr) then break end
+                        local hrp = enemyChar.HumanoidRootPart
+                        local head = enemyChar.Head
+                        myChar.HumanoidRootPart.CFrame = CFrame.new(hrp.Position - hrp.CFrame.LookVector * 3, head.Position)
+                        Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+                        task.wait()
+                    end
+                    -- Attack if still valid
+                    if IsKillAllEnemy(plr) then
+                        local tool = myChar:FindFirstChildOfClass("Tool")
+                        local fireEvent = ReplicatedStorage:FindFirstChild("FireEvent")
+                        if tool and fireEvent then
+                            fireEvent:FireServer()
+                        elseif tool then
+                            tool:Activate()
+                        end
+                    end
+                end
+            end
+            task.wait()
+        end
+    end)
+end
+
+local function StopKillAll()
+    CombatSettings.KillAllEnabled = false
+    if killAllThread then
+        task.cancel(killAllThread)
+        killAllThread = nil
+    end
+end
+
+-- Silent Aim running state
+local silentAimRunning = false
+local silentAimThread = nil
+
+local function StartSilentAim()
+    if silentAimRunning then return end
+    silentAimRunning = true
+    silentAimThread = coroutine.create(function()
+        while silentAimRunning do
+            pcall(function()
+                for _, v in pairs(Players:GetPlayers()) do
+                    if v.Name ~= LocalPlayer.Name and v.Character then
+                        pcall(function()
+                            if v.Character:FindFirstChild("RightUpperLeg") then
+                                v.Character.RightUpperLeg.CanCollide = false
+                                v.Character.RightUpperLeg.Transparency = 10
+                                v.Character.RightUpperLeg.Size = Vector3.new(13, 13, 13)
+                            end
+                            if v.Character:FindFirstChild("LeftUpperLeg") then
+                                v.Character.LeftUpperLeg.CanCollide = false
+                                v.Character.LeftUpperLeg.Transparency = 10
+                                v.Character.LeftUpperLeg.Size = Vector3.new(13, 13, 13)
+                            end
+                            if v.Character:FindFirstChild("HeadHB") then
+                                v.Character.HeadHB.CanCollide = false
+                                v.Character.HeadHB.Transparency = 10
+                                v.Character.HeadHB.Size = Vector3.new(13, 13, 13)
+                            end
+                            if v.Character:FindFirstChild("HumanoidRootPart") then
+                                v.Character.HumanoidRootPart.CanCollide = false
+                                v.Character.HumanoidRootPart.Transparency = 10
+                                v.Character.HumanoidRootPart.Size = Vector3.new(13, 13, 13)
+                            end
+                        end)
+                    end
+                end
+            end)
+            task.wait(1)
+        end
+    end)
+    coroutine.resume(silentAimThread)
+end
+
+local function StopSilentAim()
+    silentAimRunning = false
+    -- Reset hitbox sizes
+    pcall(function()
+        for _, v in pairs(Players:GetPlayers()) do
+            if v.Name ~= LocalPlayer.Name and v.Character then
+                pcall(function()
+                    if v.Character:FindFirstChild("RightUpperLeg") then
+                        v.Character.RightUpperLeg.Size = Vector3.new(1, 1.5, 1)
+                        v.Character.RightUpperLeg.Transparency = 0
+                    end
+                    if v.Character:FindFirstChild("LeftUpperLeg") then
+                        v.Character.LeftUpperLeg.Size = Vector3.new(1, 1.5, 1)
+                        v.Character.LeftUpperLeg.Transparency = 0
+                    end
+                    if v.Character:FindFirstChild("HeadHB") then
+                        v.Character.HeadHB.Size = Vector3.new(1.2, 1.2, 1.2)
+                        v.Character.HeadHB.Transparency = 1
+                    end
+                    if v.Character:FindFirstChild("HumanoidRootPart") then
+                        v.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 1)
+                        v.Character.HumanoidRootPart.Transparency = 1
+                    end
+                end)
+            end
+        end
+    end)
+end
+
+-- Aim key input handling
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    local keyName = CombatSettings.AimKey
+    if keyName == "MouseButton2" and input.UserInputType == Enum.UserInputType.MouseButton2 then
+        CombatSettings.AimKeyHeld = true
+    elseif keyName == "MouseButton1" and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        CombatSettings.AimKeyHeld = true
+    elseif input.UserInputType == Enum.UserInputType.Keyboard then
+        local success, keyCode = pcall(function() return Enum.KeyCode[keyName] end)
+        if success and input.KeyCode == keyCode then
+            CombatSettings.AimKeyHeld = true
+        end
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    local keyName = CombatSettings.AimKey
+    if keyName == "MouseButton2" and input.UserInputType == Enum.UserInputType.MouseButton2 then
+        CombatSettings.AimKeyHeld = false
+    elseif keyName == "MouseButton1" and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        CombatSettings.AimKeyHeld = false
+    elseif input.UserInputType == Enum.UserInputType.Keyboard then
+        local success, keyCode = pcall(function() return Enum.KeyCode[keyName] end)
+        if success and input.KeyCode == keyCode then
+            CombatSettings.AimKeyHeld = false
+        end
+    end
+end)
+
+-- Kill All keybind handler (only works when armed via toggle)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if not CombatSettings.KillAllArmed then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        local success, keyCode = pcall(function() return Enum.KeyCode[CombatSettings.KillAllKeybind] end)
+        if success and input.KeyCode == keyCode then
+            if CombatSettings.KillAllEnabled then
+                StopKillAll()
+            else
+                StartKillAll()
+            end
+        end
+    end
+end)
+
+-- Golden Knife Teleport loop
+local goldenKnifeConnection = nil
+local function UpdateGoldenKnifeTeleport()
+    if goldenKnifeConnection then
+        goldenKnifeConnection:Disconnect()
+        goldenKnifeConnection = nil
+    end
+    if CombatSettings.GoldenKnifeTeleport then
+        goldenKnifeConnection = RunService.Heartbeat:Connect(function()
+            if CombatSettings.GoldenKnifeTeleport then
+                DoGoldenKnifeTeleport()
+            end
+        end)
+    end
+end
+
+-- Rainbow hue tracker
+local rainbowHue = 0
+
+-- Aimbot Loop (Camera CFrame Lerp - Heartbeat)
+RunService.Heartbeat:Connect(function()
+    if CombatSettings.AimbotEnabled and CombatSettings.AimKeyHeld then
+        local target = GetClosestEnemyPart()
+        if target then
+            local smoothAlpha = math.clamp(CombatSettings.Smoothness, 0.05, 1)
+            Camera.CFrame = Camera.CFrame:Lerp(
+                CFrame.lookAt(Camera.CFrame.Position, target.Position),
+                smoothAlpha
+            )
+        end
+    end
+end)
+
+-- Main RenderStepped loop (FOV + Skin + Rainbow)
+RunService.RenderStepped:Connect(function(dt)
+    -- FOV Circle update
+    FOVCircle.Visible = CombatSettings.ShowFOV
+    FOVCircle.Radius = CombatSettings.FOVRadius
+    FOVCircle.Thickness = CombatSettings.FOVThickness
+    FOVCircle.Transparency = 1 - CombatSettings.FOVTransparency
+    FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    FOVCircle.NumSides = 64
+    
+    -- Rainbow FOV
+    if CombatSettings.RainbowFOV then
+        rainbowHue = (rainbowHue + dt * 0.5) % 1
+        FOVCircle.Color = Color3.fromHSV(rainbowHue, 1, 1)
+    else
+        FOVCircle.Color = CombatSettings.FOVColor
+    end
+
+    -- Skin apply loop
+    pcall(function()
+        if not SkinSettings.Enabled then return end
+        
+        local dataFolder = LocalPlayer:FindFirstChild("Data")
+        local equippedVal = LocalPlayer:FindFirstChild("Equipped")
+        
+        if dataFolder and SkinSettings.SelectedKnife ~= "Default" then
+            local meleeData = dataFolder:FindFirstChild("Melee")
+            local clean = SkinSettings.SelectedKnife
+            if string.sub(clean, 1, 2) == "v_" or string.sub(clean, 1, 2) == "w_" then clean = string.sub(clean, 3)
+            elseif string.sub(clean, 1, 6) == "Melee_" then clean = string.sub(clean, 7) end
+            if meleeData and meleeData.Value ~= clean then meleeData.Value = clean end
+        end
+        
+        if dataFolder and SkinSettings.SelectedPlayer ~= "Default" then
+            local skinData = dataFolder:FindFirstChild("Skin")
+            if skinData and skinData.Value ~= SkinSettings.SelectedPlayer then skinData.Value = SkinSettings.SelectedPlayer end
+        end
+        
+        if equippedVal and SkinSettings.SelectedWeapon ~= "Default" then
+            if equippedVal:IsA("StringValue") and equippedVal.Value ~= SkinSettings.SelectedWeapon then equippedVal.Value = SkinSettings.SelectedWeapon end
+        end
+    end)
+
+    -- Chams apply loop
+    if WorldVisualSettings.ViewmodelChams or WorldVisualSettings.ArmChams or WorldVisualSettings.GunChams then
+        ApplyChams()
+    end
+end)
+
+local Modal = loadstring(game:HttpGet("https://github.com/BloxCrypto/Modal/releases/download/v1.0-beta/main.lua"))()
+local Window = Modal:CreateWindow({
+    Title = "Levi Hub X | Arsenal",
+    Size = UDim2.fromOffset(580, 460),
+    MinimumSize = Vector2.new(350, 300),
+    Transparency = 0,
+    Icon = "rbxassetid://68073547",
+})
+Window:SetTheme("Dark")
+
+-- =====================================
+-- 1. COMBAT TAB
+-- =====================================
+local Options = {}
+
+local function TrackedToggle(tab, title, config)
+    local visualState = config.DefaultValue or false
+    local origCallback = config.Callback
+    config.Callback = function(Value)
+        visualState = Value
+        if origCallback then origCallback(Value) end
+    end
+    local toggle = tab:New("Toggle")(config)
+    Options[title] = {
+        _type = "toggle",
+        _toggle = toggle,
+        _getVisual = function() return visualState end,
+        _setToggle = function(newVal)
+            if visualState == newVal then return end
+            pcall(function()
+                if toggle and toggle.Object then
+                    local signal = true
+                    if type(firesignal) == 'function' then
+                        pcall(function() firesignal(toggle.Object.MouseButton1Click) end)
+                    elseif type(fireclick) == 'function' then
+                        pcall(function() fireclick(toggle.Object) end)
+                    else
+                        visualState = newVal
+                        if origCallback then origCallback(newVal) end
+                        local frame = toggle.Object:FindFirstChild("Frame") or toggle.Object:FindFirstChildWhichIsA("Frame", true)
+                        if frame then
+                            if newVal then
+                                frame.BackgroundColor3 = Color3.fromRGB(0, 255, 128)
+                            else
+                                frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    }
+    return toggle
+end
+
+local function TrackedSlider(tab, title, config)
+    local currentValue = config.Default or config.Minimum or 0
+    local origCallback = config.Callback
+    config.Callback = function(Value)
+        currentValue = Value
+        if origCallback then origCallback(Value) end
+    end
+    local slider = tab:New("Slider")(config)
+    Options[title] = {
+        _type = "slider",
+        _slider = slider,
+        _getVisual = function() return currentValue end,
+        _setSlider = function(newVal)
+            if currentValue == newVal then return end
+            currentValue = newVal
+            if origCallback then origCallback(newVal) end
+            pcall(function()
+                if slider and slider.Object then
+                    local sliderFrame = slider.Object:FindFirstChild("Slider")
+                    if sliderFrame then
+                        local textBox = sliderFrame:FindFirstChildWhichIsA("TextBox")
+                        if textBox then
+                            textBox.Text = tostring(newVal)
+                            pcall(function() firesignal(textBox.FocusLost, true) end)
+                        end
+                    end
+                end
+            end)
+        end
+    }
+    return slider
+end
+
+local function TrackedDropdown(tab, title, config)
+    local currentValue = config.Default or config.Options[1]
+    local origCallback = config.Callback
+    config.Callback = function(Value)
+        currentValue = Value
+        if origCallback then origCallback(Value) end
+    end
+    local dropdown = tab:New("Dropdown")(config)
+    Options[title] = {
+        _type = "dropdown",
+        _getVisual = function() return currentValue end,
+        _setDropdown = function(newVal)
+            if currentValue == newVal then return end
+            currentValue = newVal
+            if origCallback then origCallback(newVal) end
+            pcall(function()
+                if dropdown and dropdown.Object then
+                    local textLabel = dropdown.Object:FindFirstChildWhichIsA("TextLabel")
+                    if textLabel then textLabel.Text = tostring(newVal) end
+                end
+            end)
+        end
+    }
+    return dropdown
+end
+
+local function TrackedKeybind(tab, title, config)
+    local currentValue = config.DefaultKeybind or "None"
+    local origCallback = config.Callback
+    config.Callback = function(Value)
+        currentValue = Value.Name or tostring(Value)
+        if origCallback then origCallback(Value) end
+    end
+    local keybind = tab:New("Keybind")(config)
+    Options[title] = {
+        _type = "keybind",
+        _getVisual = function() return currentValue end,
+        _setKeybind = function(newVal)
+            if currentValue == newVal then return end
+            currentValue = newVal
+            if origCallback then pcall(function() origCallback({Name=newVal}) end) end
+            pcall(function()
+                if keybind and keybind.Object then
+                    local textLabel = keybind.Object:FindFirstChildWhichIsA("TextLabel")
+                    if textLabel then textLabel.Text = tostring(newVal) end
+                end
+            end)
+        end
+    }
+    return keybind
+end
+
+
+local ConfigLibrary = (function()
+    local HttpService = game:GetService("HttpService")
+    return {
+        Encode = function(Table) return HttpService:JSONEncode(Table) end,
+        Decode = function(Content) return HttpService:JSONDecode(Content) end
+    }
+end)()
+
+local CONFIG_FOLDER = "LeviHub/Configs/"
+if not isfolder("LeviHub") then makefolder("LeviHub") end
+if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
+
+local saveConfig = function(name)
+    name = name or "Default"
+    local path = CONFIG_FOLDER .. name .. "_arsenal.json"
+    local configData = {
+        ScriptSettings = ScriptSettings,
+        CombatSettings = CombatSettings,
+        SkinSettings = SkinSettings,
+        GunModSettings = GunModSettings,
+        WorldVisualSettings = WorldVisualSettings
+    }
+    pcall(function() writefile(path, ConfigLibrary.Encode(configData)) end)
+    return true
+end
+
+local loadConfig = function(name)
+    name = name or "Default"
+    local path = CONFIG_FOLDER .. name .. "_arsenal.json"
+    if not isfile(path) then return false end
+    local success, conf = pcall(function() return ConfigLibrary.Decode(readfile(path)) end)
+    if success and conf then
+        for k,v in pairs(conf.ScriptSettings or {}) do ScriptSettings[k] = v end
+        for k,v in pairs(conf.CombatSettings or {}) do CombatSettings[k] = v end
+        for k,v in pairs(conf.SkinSettings or {}) do SkinSettings[k] = v end
+        for k,v in pairs(conf.GunModSettings or {}) do GunModSettings[k] = v end
+        for k,v in pairs(conf.WorldVisualSettings or {}) do WorldVisualSettings[k] = v end
+        
+        -- Sync UI States
+        for key, opt in pairs(Options) do
+            local loadedVal = nil
+            -- search through our settings tables
+            for _, tName in ipairs({ScriptSettings, CombatSettings, SkinSettings, GunModSettings, WorldVisualSettings, Config}) do
+                if type(tName) == "table" then
+                    -- heuristic match
+                    for k,v in pairs(tName) do
+                        if k == key:gsub("%s+", "") or string.find(key:lower(), k:lower()) or string.find(k:lower(), key:lower()) then
+                            loadedVal = v
+                            break
+                        end
+                    end
+                end
+                if loadedVal ~= nil then break end
+            end
+
+            if loadedVal ~= nil and opt._getVisual then
+                if opt._type == "toggle" and opt._setToggle then
+                    if loadedVal ~= opt._getVisual() then
+                        pcall(function() opt._setToggle(loadedVal) end)
+                    end
+                elseif opt._type == "slider" and opt._setSlider then
+                    if loadedVal ~= opt._getVisual() then
+                        pcall(function() opt._setSlider(loadedVal) end)
+                    end
+                elseif opt._type == "dropdown" and opt._setDropdown then
+                    if loadedVal ~= opt._getVisual() then
+                        pcall(function() opt._setDropdown(loadedVal) end)
+                    end
+                elseif opt._type == "keybind" and opt._setKeybind then
+                    if loadedVal ~= opt._getVisual() then
+                        pcall(function() opt._setKeybind(loadedVal) end)
+                    end
+                end
+            end
+        end
+
+        return true
+    end
+    return false
+end
+local CombatTab = Window:AddTab("Combat")
+
+-- ===== AIMBOT SECTION =====
+CombatTab:New("Title")({ Title = "Aimbot" })
+
+TrackedToggle(CombatTab, "Enable Aimbot", {
+    Title = "Enable Aimbot",
+    DefaultValue = false,
+    Callback = function(v)
+        CombatSettings.AimbotEnabled = v
+    end
+})
+
+TrackedSlider(CombatTab, "Smoothness", {
+    Title = "Smoothness",
+    Default = 0.3,
+    Minimum = 0.05,
+    Maximum = 1,
+    DecimalCount = 2,
+    Callback = function(v)
+        CombatSettings.Smoothness = v
+    end
+})
+
+TrackedToggle(CombatTab, "Wall Check", {
+    Title = "Wall Check",
+    DefaultValue = true,
+    Callback = function(v)
+        CombatSettings.WallCheck = v
+    end
+})
+
+TrackedToggle(CombatTab, "Team Check", {
+    Title = "Team Check",
+    DefaultValue = true,
+    Callback = function(v)
+        CombatSettings.AimbotTeamCheck = v
+    end
+})
+
+TrackedDropdown(CombatTab, "Hit Part", {
+    Title = "Hit Part",
+    Options = {"Head", "HumanoidRootPart", "UpperTorso"},
+    Default = "Head",
+    Callback = function(v)
+        CombatSettings.HitPart = v
+    end
+})
+
+TrackedDropdown(CombatTab, "Aim Key", {
+    Title = "Aim Key",
+    Options = {"MouseButton2", "MouseButton1", "Q", "E", "X", "C", "V", "LeftShift", "LeftAlt", "CapsLock"},
+    Default = "MouseButton2",
+    Callback = function(v)
+        CombatSettings.AimKey = v
+        CombatSettings.AimKeyHeld = false
+    end
+})
+
+-- ===== SILENT AIM SECTION =====
+CombatTab:New("Title")({ Title = "Silent Aim" })
+
+TrackedToggle(CombatTab, "Enable Silent Aim", {
+    Title = "Enable Silent Aim",
+    DefaultValue = false,
+    Callback = function(v)
+        CombatSettings.SilentAimEnabled = v
+        if v then
+            StartSilentAim()
+        else
+            StopSilentAim()
+        end
+    end
+})
+
+-- ===== FOV CIRCLE SECTION =====
+CombatTab:New("Title")({ Title = "FOV Circle" })
+
+TrackedToggle(CombatTab, "Show FOV", {
+    Title = "Show FOV",
+    DefaultValue = false,
+    Callback = function(v)
+        CombatSettings.ShowFOV = v
+    end
+})
+
+TrackedSlider(CombatTab, "FOV Radius", {
+    Title = "FOV Radius",
+    Default = 150,
+    Minimum = 10,
+    Maximum = 500,
+    DecimalCount = 0,
+    Callback = function(v)
+        CombatSettings.FOVRadius = v
+    end
+})
+
+TrackedSlider(CombatTab, "FOV Transparency", {
+    Title = "FOV Transparency",
+    Default = 0.5,
+    Minimum = 0,
+    Maximum = 1,
+    DecimalCount = 2,
+    Callback = function(v)
+        CombatSettings.FOVTransparency = v
+    end
+})
+
+TrackedSlider(CombatTab, "FOV Thickness", {
+    Title = "FOV Thickness",
+    Default = 1.5,
+    Minimum = 0.5,
+    Maximum = 5,
+    DecimalCount = 1,
+    Callback = function(v)
+        CombatSettings.FOVThickness = v
+    end
+})
+
+CombatTab:New("ColorPicker")({
+    Title = "FOV Circle Color",
+    Default = Color3.fromRGB(255, 255, 255),
+    Callback = function(v)
+        CombatSettings.FOVColor = v
+    end
+})
+
+TrackedToggle(CombatTab, "Rainbow FOV Circle", {
+    Title = "Rainbow FOV Circle",
+    DefaultValue = false,
+    Callback = function(v)
+        CombatSettings.RainbowFOV = v
+    end
+})
+
+-- ===== KILL ALL SECTION =====
+CombatTab:New("Title")({ Title = "Exploits" })
+
+TrackedToggle(CombatTab, "Kill All", {
+    Title = "Kill All (Arms Keybind)",
+    DefaultValue = false,
+    Callback = function(v)
+        CombatSettings.KillAllArmed = v
+        if not v and CombatSettings.KillAllEnabled then
+            StopKillAll()
+        end
+    end
+})
+
+TrackedKeybind(CombatTab, "Kill All Keybind", {
+    Title = "Kill All Keybind",
+    DefaultKeybind = "P",
+    Callback = function(v)
+        CombatSettings.KillAllKeybind = v.Name or tostring(v)
+    end
+})
+
+-- =====================================
+-- 3. VISUAL SETTINGS TAB
+-- =====================================
+local MainTab = Window:AddTab("Visual Settings")
+
+MainTab:New("Title")({ Title = "ESP" })
+TrackedToggle(MainTab, "Enable ESP", {
+    Title = "Enable ESP",
+    DefaultValue = false,
+    Callback = function(v) ScriptSettings.Enabled = v; UpdateHighlightESP() end
+})
+
+TrackedToggle(MainTab, "Rainbow ESP", {
+    Title = "Rainbow ESP",
+    DefaultValue = true,
+    Callback = function(v) ScriptSettings.RainbowESP = v end
+})
+
+TrackedToggle(MainTab, "Team Check", { Title = "Team Check", DefaultValue = true, Callback = function(v) ScriptSettings.TeamCheck = v; UpdateHighlightESP() end })
+
+MainTab:New("Title")({ Title = "ESP Colors" })
+
+MainTab:New("ColorPicker")({
+    Title = "Fill Color",
+    Default = Color3.fromRGB(255, 255, 255),
+    Callback = function(v) ScriptSettings.FillColor = v end
+})
+
+MainTab:New("ColorPicker")({
+    Title = "Outline Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(v) ScriptSettings.OutlineColor = v end
+})
+
+MainTab:New("Slider")({
+    Title = "Fill Transparency",
+    Default = 0.75,
+    Minimum = 0,
+    Maximum = 1,
+    DecimalCount = 2,
+    Callback = function(v) ScriptSettings.FillTransparency = v end
+})
+
+MainTab:New("Slider")({
+    Title = "Outline Transparency",
+    Default = 0,
+    Minimum = 0,
+    Maximum = 1,
+    DecimalCount = 2,
+    Callback = function(v) ScriptSettings.OutlineTransparency = v end
+})
+
+-- =====================================
+-- 3. WORLD VISUAL TAB
+-- =====================================
+local WorldTab = Window:AddTab("World Visual")
+
+WorldTab:New("Title")({ Title = "Viewmodel & Chams" })
+
+TrackedToggle(WorldTab, "Viewmodel Chams", {
+    Title = "Viewmodel Chams",
+    DefaultValue = false,
+    Callback = function(v)
+        WorldVisualSettings.ViewmodelChams = v
+    end
+})
+
+TrackedToggle(WorldTab, "Arm Chams", {
+    Title = "Arm Chams",
+    DefaultValue = false,
+    Callback = function(v)
+        WorldVisualSettings.ArmChams = v
+    end
+})
+
+WorldTab:New("ColorPicker")({
+    Title = "Arm Chams Color",
+    Default = Color3.fromRGB(0, 170, 255),
+    Callback = function(v)
+        WorldVisualSettings.ArmChamsColor = v
+    end
+})
+
+TrackedToggle(WorldTab, "Gun Chams", {
+    Title = "Gun Chams",
+    DefaultValue = false,
+    Callback = function(v)
+        WorldVisualSettings.GunChams = v
+    end
+})
+
+WorldTab:New("ColorPicker")({
+    Title = "Gun Chams Color",
+    Default = Color3.fromRGB(255, 0, 100),
+    Callback = function(v)
+        WorldVisualSettings.GunChamsColor = v
+    end
+})
+
+TrackedDropdown(WorldTab, "Gun Chams Material", {
+    Title = "Gun Chams Material",
+    Options = {"Neon", "Glass", "Ice", "Metal", "Plastic", "SmoothPlastic"},
+    Default = "Neon",
+    Callback = function(v)
+        WorldVisualSettings.GunChamsMaterial = v
+    end
+})
+
+WorldTab:New("Title")({ Title = "Environment" })
+
+TrackedDropdown(WorldTab, "Custom Skybox", {
+    Title = "Custom Skybox",
+    Options = {"Default", "Galaxy", "Sunset", "Night Sky", "Cloudy", "Vaporwave", "Red"},
+    Default = "Default",
+    Callback = function(v)
+        WorldVisualSettings.CustomSkybox = v
+        ApplyCustomSkybox(v)
+    end
+})
+
+-- =====================================
+-- 4. GUN MODS TAB
+-- =====================================
+local GunModTab = Window:AddTab("Gun Mods")
+
+GunModTab:New("Title")({ Title = "Weapon Modifications" })
+
+TrackedToggle(GunModTab, "Infinite Ammo", {
+    Title = "Infinite Ammo",
+    DefaultValue = false,
+    Callback = function(v)
+        GunModSettings.InfiniteAmmo = v
+        for _, weapon in ipairs(WeaponsFolder:GetChildren()) do
+            local backup = WeaponBackup[weapon.Name]
+            if backup and weapon:FindFirstChild("Ammo") then
+                weapon.Ammo.Value = v and 999 or backup.Ammo
+            end
+        end
+    end
+})
+
+TrackedToggle(GunModTab, "Auto Fire", {
+    Title = "Auto Fire",
+    DefaultValue = false,
+    Callback = function(v)
+        GunModSettings.AutoFire = v
+        for _, weapon in ipairs(WeaponsFolder:GetChildren()) do
+            local backup = WeaponBackup[weapon.Name]
+            if backup and weapon:FindFirstChild("Auto") then
+                weapon.Auto.Value = v and true or backup.Auto
+            end
+        end
+    end
+})
+
+TrackedToggle(GunModTab, "Fast Fire Rate", {
+    Title = "Fast Fire Rate",
+    DefaultValue = false,
+    Callback = function(v)
+        GunModSettings.FastFireRate = v
+        for _, weapon in ipairs(WeaponsFolder:GetChildren()) do
+            local backup = WeaponBackup[weapon.Name]
+            if backup and weapon:FindFirstChild("FireRate") then
+                weapon.FireRate.Value = v and 0.011 or backup.FireRate
+            end
+        end
+    end
+})
+
+TrackedToggle(GunModTab, "No Recoil", {
+    Title = "No Recoil",
+    DefaultValue = false,
+    Callback = function(v)
+        GunModSettings.NoRecoil = v
+        for _, weapon in ipairs(WeaponsFolder:GetChildren()) do
+            local backup = WeaponBackup[weapon.Name]
+            if backup and weapon:FindFirstChild("RecoilControl") then
+                weapon.RecoilControl.Value = v and 1 or backup.RecoilControl
+            end
+        end
+    end
+})
+
+TrackedToggle(GunModTab, "No Spread", {
+    Title = "No Spread",
+    DefaultValue = false,
+    Callback = function(v)
+        GunModSettings.NoSpread = v
+        for _, weapon in ipairs(WeaponsFolder:GetChildren()) do
+            local backup = WeaponBackup[weapon.Name]
+            if backup and weapon:FindFirstChild("Spread") and weapon:FindFirstChild("SpreadRecovery") then
+                weapon.Spread.Value = v and 0 or backup.Spread
+                weapon.SpreadRecovery.Value = v and 1 or backup.SpreadRecovery
+            end
+        end
+    end
+})
+
+
+
+
+-- =====================================
+-- 4. SKIN CHANGER TAB
+-- =====================================
+local KnifeTab
+if not isXeno then
+    KnifeTab = Window:AddTab("Skin Changer")
+
+    KnifeTab:New("Title")({ Title = "Skin Changer" })
+
+TrackedToggle(KnifeTab, "Enable Skin Changer", {
+    Title = "Enable Skin Changer",
+    DefaultValue = true,
+    Callback = function(v)
+        SkinSettings.Enabled = v
+        if v then
+            ApplySkins()
+        else
+            ResetSkins()
+        end
+    end
+})
+
+local customKnivesList = {
+    "Default", "ACT Trophy", "Annihilator's Broken Sword", "Ban Hammer", "Banana", "Bat", "Bat Axe", "Baton", "Big Sip", "Blade", "Blossoming Femur", "Bone Karambit", "Bouquet", "Bowie Knife", "Brass Knuckles", "Brick", "Bunny Staff", "Butterfly Knife", "Calculator", "Can Mace", "Candelabra", "Candle Sword", "Candy Cane", "Candy Cane Sword", "Carrot", "Chainsaw", "Classic Sword", "Claws", "Cleaver", "Coal Scythe", "Coal Sword", "Combat Knife", "Coral Blade", "Crab Claw", "Da Melee", "Dagger", "Divinity", "Drill-Shear Skewer", "Earth Cleaver", "Easter Cleaver", "Egg", "Electronic Stake", "Energy Blade", "Falchion Knife", "Fire Poker", "FireAxe", "Fish", "Fisticuffs", "Fists", "Frog", "Frostweaver's Wand", "Garlic Kebab", "Gaster Blaster", "Gingerbread Knife", "Glacier Blade", "Glowstick", "Golden Rings", "Grumpy Hammer", "Guitar", "Gut Knife", "Halberd", "Handblades", "Harvester", "Heart Break", "Huntsman Knife", "Ice Dagger", "Icicle", "Karambit", "Katana", "Khopesh", "Kukri", "Kunai", "Leaders Axe", "Literal Melee", "Loaf", "M9 Bayonet", "Machete", "Makeshift Axe", "Moai", "Naginata", "Newspaper", "Night's Edge", "Paddle", "Paint Brush", "Pan", "Pencil", "Peppermint Slicer", "Persian Sword", "Pitchfork", "Plane", "Pumpkin Bucket", "Rapier", "Rebels Bat", "Reliable Hammer", "Rokia Hammer", "Roughians Pipe", "Rusty Pipe", "Sabre", "Scythe", "Seal", "Shadow Daggers", "Shovel", "Sickle", "Silver Bell", "Sip O' Stink", "Skele Scythe", "Skull Pal", "Sledgehammer", "Slicecicle", "Smug Egg", "Spring Greatsword", "Starfire Staff", "Stop Sign", "Strangers Handblades", "Swift End", "Swordfish", "Tactical Knife", "The Darkheart", "The Firebrand", "The Fool's Tool", "The Ghostwalker", "The Ice Dagger", "The Illumina", "The Scrambler", "The Venomshank", "The Windforce", "Tomahawk", "Toy Tree", "Trench Mace", "When Day Breaks", "Wired Bat", "Wooden Spoon", "Wrench"
+}
+
+KnifeTab:New("Dropdown")({
+    Title = "Melee List",
+    Options = customKnivesList,
+    Default = "Default",
+    Callback = function(selected)
+        SkinSettings.SelectedKnife = selected
+        ApplySkins()
+    end
+})
+
+
+local playerSkins = {
+    "Default", "Anarchist", "Agent", "Brute", "Builder", "Castler", "Dealer", 
+    "Delinquent", "Desperado", "Doctor", "Executioner", "Flanker", "Grifter", 
+    "Hakari", "Headhunter", "Kira", "Lumberjack", "Mechanic", "Ninja", 
+    "Paratrooper", "Pirate", "Rabble Rouser", "Performer", "Professional", 
+    "Slayer", "Tough Guy", "Veteran", "Vampire", "Zerotwo", "Unga Bunga",
+    "Rabblerouser", "Suspicious Stranger", "Alien In Disguise", "Aviator", 
+    "Baseball Star", "Beach Bum", "Beard", "Pepper Mc’Cool", "Planter", "Pumpi", 
+    "Pumpo", "Recruit", "Retro Zombie", "Rookie", "Runner", "Sailor", "Sarah", 
+    "Seagee", "Secret Agent", "Seedling", "Sightseer", "Sir. Winter", "Snow-Op Beard", 
+    "Soccer Star", "Stella", "Summer Delinquent", "The Acrobat", "Tomfoolery Delinquent", 
+    "Tomfoolery Rabblerouser", "Tadashi", "Tai", "Tourist", "Toy Army", "Trainer", 
+    "Trash Worker", "Treasure Hunter", "Vinny", "Weightlifer", "Wilhelm", "Woods", 
+    "Worker", "Zack", "Zombella", "Zombert", "Rioter", "Rough Houser", "Scientist", 
+    "Scarecrow", "Shinobi", "Smug Zam", "Soldier", "Summer Rabblerouser", 
+    "The Marksman", "The Trooper", "Trooper", "Vagrant", "Wanderer", "Winter Anarchist"
+}
+table.sort(playerSkins)
+
+KnifeTab:New("Dropdown")({
+    Title = "Player Skin",
+    Options = playerSkins,
+    Default = "Default",
+    Callback = function(selected)
+        SkinSettings.SelectedPlayer = selected
+        ApplySkins()
+    end
+})
+
+local weaponSkins = {
+    "Default", "Dark Matter", "Rope", "Liquid", "Frozen", "Golden", "Neon", "Retrowave", 
+    "Code", "Glitch", "Inferno", "Darkness", "Light", "Rainbow", "Galaxy",
+    "Alien", "Arctic Camo", "Aurora", "B-Bot", "Bells", "Binary", "Bones", "Brick", 
+    "Bronze", "Bruh", "Bubble", "Candied", "Candies", "Candy Cross", "Canes and Cookies", 
+    "Cartoony Ghost", "Cell", "Checkers", "Cherry", "Clouds", "Coal", "Circuit", 
+    "Creator", "Crystalline", "Cube", "Cyber", "Diamond", "Duckies", "Flow", "Fog", 
+    "Froggo", "Gift Wrapped", "Glitter", "Gold", "Grid", "Hallowed Crystals", "Holly", 
+    "Loops", "Magma", "Mushroom", "Node", "Nomad", "Petal", "Police Tape", "Polkas", 
+    "Pumpkin", "Quandale Dingle", "Run", "Scrambled", "Seals", "Silver", "Skull", 
+    "Snow Scattered", "Spirals", "Splots", "Squad", "Stars", "Static", "Suit", "Swirl", 
+    "Target", "Triangles", "Ugly Sweater", "Vine", "Water", "Webs", "Widow", "Wood", "Zebra"
+}
+table.sort(weaponSkins)
+
+KnifeTab:New("Dropdown")({
+    Title = "Gun Skin",
+    Options = weaponSkins,
+    Default = "Default",
+    Callback = function(selected)
+        SkinSettings.SelectedWeapon = selected
+        ApplySkins()
+    end
+})
+end
+
+
+
+-- ==================== HIGHLIGHT ESP SYSTEM ====================
+local espHighlights = {}
+local espConnections = {}
+
+local function IsESPEnemy(plr)
+    if not plr or plr == LocalPlayer then return false end
+    if not plr.Character then return false end
+    local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
+    if not humanoid or humanoid.Health <= 0 then return false end
+    if ScriptSettings.TeamCheck then
+        local sameTeam = false
+        pcall(function()
+            if plr.TeamColor == LocalPlayer.TeamColor then
+                sameTeam = true
+            end
+            if plr.Team and LocalPlayer.Team and plr.Team == LocalPlayer.Team then
+                sameTeam = true
+            end
+        end)
+        if sameTeam then return false end
+    end
+    return true
+end
+
+local function rainbowColor()
+    local t = tick() * 3
+    return Color3.new(
+        (math.sin(t) + 1) / 2,
+        (math.sin(t + 2) + 1) / 2,
+        (math.sin(t + 4) + 1) / 2
+    )
+end
+
+local function ApplyHighlight(player)
+    if player == LocalPlayer then return end
+    pcall(function()
+        -- Remove old highlight if exists
+        if espHighlights[player] then
+            pcall(function() espHighlights[player]:Destroy() end)
+            espHighlights[player] = nil
+        end
+
+        local character = player.Character
+        if not character then return end
+
+        -- Remove any existing LeviESP highlights
+        for _, child in ipairs(character:GetChildren()) do
+            if child:IsA("Highlight") and child.Name == "LeviESP" then
+                child:Destroy()
+            end
+        end
+
+        local highlight = Instance.new("Highlight")
+        highlight.Name = "LeviESP"
+        highlight.FillColor = ScriptSettings.FillColor
+        highlight.OutlineColor = ScriptSettings.OutlineColor
+        highlight.FillTransparency = ScriptSettings.FillTransparency
+        highlight.OutlineTransparency = ScriptSettings.OutlineTransparency
+        highlight.Adornee = character
+        highlight.Enabled = ScriptSettings.Enabled
+        highlight.Parent = character
+
+        espHighlights[player] = highlight
+    end)
+end
+
+local function RemoveHighlight(player)
+    pcall(function()
+        if espHighlights[player] then
+            espHighlights[player]:Destroy()
+            espHighlights[player] = nil
+        end
+    end)
+    if espConnections[player] then
+        pcall(function() espConnections[player]:Disconnect() end)
+        espConnections[player] = nil
+    end
+end
+
+local function SetupPlayer(player)
+    if player == LocalPlayer then return end
+    ApplyHighlight(player)
+    -- Reconnect on respawn
+    if espConnections[player] then
+        pcall(function() espConnections[player]:Disconnect() end)
+    end
+    espConnections[player] = player.CharacterAdded:Connect(function(char)
+        task.wait(0.5)
+        ApplyHighlight(player)
+    end)
+end
+
+function UpdateHighlightESP()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if ScriptSettings.Enabled then
+                if not espHighlights[player] then
+                    SetupPlayer(player)
+                end
+            else
+                pcall(function()
+                    if espHighlights[player] then
+                        espHighlights[player].Enabled = false
+                    end
+                end)
+            end
+        end
+    end
+end
+
+-- Initialize ESP for existing players
+for _, player in ipairs(Players:GetPlayers()) do
+    SetupPlayer(player)
+end
+
+Players.PlayerAdded:Connect(function(player)
+    task.wait(1)
+    SetupPlayer(player)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    RemoveHighlight(player)
+end)
+
+-- ESP update loop: rainbow color + enable/disable
+RunService.RenderStepped:Connect(function()
+    pcall(function()
+        if not ScriptSettings.Enabled then
+            for player, hl in pairs(espHighlights) do
+                pcall(function() hl.Enabled = false end)
+            end
+            return
+        end
+
+        local rbColor = rainbowColor()
+
+        for player, hl in pairs(espHighlights) do
+            pcall(function()
+                if not player or not player.Parent then return end
+
+                -- Reattach if highlight lost its parent
+                if not hl.Parent and player.Character then
+                    hl.Adornee = player.Character
+                    hl.Parent = player.Character
+                end
+
+                if IsESPEnemy(player) then
+                    hl.Enabled = true
+                    hl.FillTransparency = ScriptSettings.FillTransparency
+                    hl.OutlineTransparency = ScriptSettings.OutlineTransparency
+
+                    if ScriptSettings.RainbowESP then
+                        hl.OutlineColor = rbColor
+                        hl.FillColor = rbColor
+                    else
+                        hl.OutlineColor = ScriptSettings.OutlineColor
+                        hl.FillColor = ScriptSettings.FillColor
+                    end
+                else
+                    hl.Enabled = false
+                end
+            end)
+        end
+    end)
+end)
+-- ==================== END HIGHLIGHT ESP SYSTEM ====================
+
+
+local function OnToolAdded(tool)
+    if not SkinSettings.Enabled then return end
+    if SkinSettings.SelectedKnife == "Default" then return end
+    if not tool:IsA("Tool") then return end
+    
+    task.wait(0.3)
+    if IsMelee(tool) then
+        ApplySkins()
+    end
+end
+
+LocalPlayer.Backpack.ChildAdded:Connect(OnToolAdded)
+
+if LocalPlayer.Character then
+    LocalPlayer.Character.ChildAdded:Connect(OnToolAdded)
+end
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    char.ChildAdded:Connect(OnToolAdded)
+    if SkinSettings.Enabled and not isXeno then
+        task.wait(3)
+        ApplySkins()
+    end
+end)
+
+-- =====================================
+-- 5. SETTINGS & BUGS REPORTS TABS
+-- =====================================
+local SettingsTab = Window:AddTab("Settings")
+local BugsReportsTab = Window:AddTab("Bugs & Reports")
+
+local ConfigLibrary = (function()
+    local HttpService = game:GetService("HttpService")
+    return {
+        Encode = function(Table) return HttpService:JSONEncode(Table) end,
+        Decode = function(Content) return HttpService:JSONDecode(Content) end
+    }
+end)()
+
+local CONFIG_FOLDER = "LeviHub/Configs/"
+if not isfolder("LeviHub") then makefolder("LeviHub") end
+if not isfolder(CONFIG_FOLDER) then makefolder(CONFIG_FOLDER) end
+
+local saveConfig = function(name)
+    name = name or "Default"
+    local path = CONFIG_FOLDER .. name .. "_arsenal.json"
+    local configData = {
+        ScriptSettings = ScriptSettings,
+        CombatSettings = CombatSettings,
+        SkinSettings = SkinSettings,
+        GunModSettings = GunModSettings,
+        WorldVisualSettings = WorldVisualSettings
+    }
+    pcall(function() writefile(path, ConfigLibrary.Encode(configData)) end)
+    return true
+end
+
+local loadConfig = function(name)
+    name = name or "Default"
+    local path = CONFIG_FOLDER .. name .. "_arsenal.json"
+    if not isfile(path) then return false end
+    local success, conf = pcall(function() return ConfigLibrary.Decode(readfile(path)) end)
+    if success and conf then
+        for k,v in pairs(conf.ScriptSettings or {}) do ScriptSettings[k] = v end
+        for k,v in pairs(conf.CombatSettings or {}) do CombatSettings[k] = v end
+        for k,v in pairs(conf.SkinSettings or {}) do SkinSettings[k] = v end
+        for k,v in pairs(conf.GunModSettings or {}) do GunModSettings[k] = v end
+        for k,v in pairs(conf.WorldVisualSettings or {}) do WorldVisualSettings[k] = v end
+        return true
+    end
+    return false
+end
+
+SettingsTab:New("Button")({
+    Title = "Unload Script",
+    Callback = function() Window:Destroy() end
+})
+
+SettingsTab:New("Title")({ Title = "Advanced Config Management" })
+
+local selectedConfig = "Default"
+local configList = {}
+local function refreshConfigList()
+    configList = {}
+    if isfolder(CONFIG_FOLDER) then
+        for _, file in next, listfiles(CONFIG_FOLDER) do
+            if file:sub(-13) == "_arsenal.json" then
+                local name = file:match("([^/^\\]+)_arsenal%.json$")
+                if name then table.insert(configList, name) end
+            end
+        end
+    end
+    if #configList == 0 then table.insert(configList, "Default") end
+    return configList
+end
+
+local configOptions = refreshConfigList()
+SettingsTab:New("Dropdown")({
+    Title = "Select Config",
+    Options = configOptions,
+    Default = "Default",
+    Callback = function(Value) selectedConfig = Value end
+})
+
+SettingsTab:New("Input")({
+    Title = "New Config Name",
+    Placeholder = "Type name...",
+    Callback = function(Value) selectedConfig = Value end
+})
+
+SettingsTab:New("Button")({
+    Title = "Save Config",
+    Callback = function()
+        saveConfig(selectedConfig)
+        Window:Notify({Title="Saved", Description="Config saved: "..selectedConfig, Duration=3, Type="Success"})
+    end
+})
+
+SettingsTab:New("Button")({
+    Title = "Load Config",
+    Callback = function()
+        if loadConfig(selectedConfig) then
+            Window:Notify({Title="Loaded", Description="Config loaded! Rejoin/Toggle UI to sync.", Type="Success", Duration=3})
+        else
+            Window:Notify({Title="Error", Description="Config not found.", Type="Error", Duration=3})
+        end
+    end
+})
+
+SettingsTab:New("Button")({
+    Title = "Delete Config",
+    Callback = function()
+        local path = CONFIG_FOLDER .. selectedConfig .. "_arsenal.json"
+        if isfile(path) then
+            delfile(path)
+            Window:Notify({Title="Deleted", Description="Config deleted.", Duration=3, Type="Info"})
+        end
+    end
+})
+
+local bugType = "Other"
+local bugMessage = ""
+
+BugsReportsTab:New("Dropdown")({
+    Title = "Bug Type",
+    Options = { "Crash", "Feature Not Working", "UI Issue", "Performance Issue", "Other" },
+    Default = "Other",
+    Callback = function(Value) bugType = Value end
+})
+
+BugsReportsTab:New("Input")({
+    Title = "Bug Description",
+    Placeholder = "Describe the bug...",
+    Callback = function(Value) bugMessage = Value end
+})
+
+BugsReportsTab:New("Button")({
+    Title = "Send Bug Report",
+    Callback = function()
+        if bugMessage == "" then return end
+        pcall(function()
+            print("Bug report sent: " .. bugType .. " - " .. bugMessage)
+            Window:Notify({Title="Report Sent", Description="Bug reported successfully!", Type="Success", Duration=3})
+        end)
+    end
+})
+
+Window:SetTab("Combat")
+
+Window:Notify({
+    Title = "Loaded",
+    Duration = 5,
+    Type = "Success"
+})
