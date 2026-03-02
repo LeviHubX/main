@@ -90,12 +90,23 @@ local WorldVisualSettings = {
 
 local SkyboxIds = {
     ["Default"] = nil,
-    ["Galaxy"] = {"rbxassetid://1012890", "rbxassetid://1012876", "rbxassetid://1012860", "rbxassetid://1012831", "rbxassetid://1012888", "rbxassetid://1012880"},
-    ["Sunset"] = {"rbxassetid://12064107", "rbxassetid://12064152", "rbxassetid://12064121", "rbxassetid://12064131", "rbxassetid://12064085", "rbxassetid://12064164"},
-    ["Night Sky"] = {"rbxassetid://6444884695", "rbxassetid://6444884695", "rbxassetid://6444884695", "rbxassetid://6444884695", "rbxassetid://6444884695", "rbxassetid://6444884695"},
-    ["Cloudy"] = {"rbxassetid://95470279", "rbxassetid://95470325", "rbxassetid://95470297", "rbxassetid://95470311", "rbxassetid://95470267", "rbxassetid://95470339"},
-    ["Vaporwave"] = {"rbxassetid://1417139488", "rbxassetid://1417139488", "rbxassetid://1417139488", "rbxassetid://1417139488", "rbxassetid://1417139488", "rbxassetid://1417139488"},
-    ["Red"] = {"rbxassetid://2667881311", "rbxassetid://2667881311", "rbxassetid://2667881311", "rbxassetid://2667881311", "rbxassetid://2667881311", "rbxassetid://2667881311"},
+    ["Vaporwave"] = {"rbxassetid://1417494030", "rbxassetid://1417494146", "rbxassetid://1417494253", "rbxassetid://1417494402", "rbxassetid://1417494499", "rbxassetid://1417494643"},
+    ["Redshift"] = {"rbxassetid://401664839", "rbxassetid://401664862", "rbxassetid://401664960", "rbxassetid://401664881", "rbxassetid://401664901", "rbxassetid://401664936"},
+    ["Desert"] = {"rbxassetid://1013852", "rbxassetid://1013853", "rbxassetid://1013850", "rbxassetid://1013851", "rbxassetid://1013849", "rbxassetid://1013854"},
+    ["DaBaby"] = {"rbxassetid://7245418472", "rbxassetid://7245418472", "rbxassetid://7245418472", "rbxassetid://7245418472", "rbxassetid://7245418472", "rbxassetid://7245418472"},
+    ["Minecraft"] = {"rbxassetid://1876545003", "rbxassetid://1876544331", "rbxassetid://1876542941", "rbxassetid://1876543392", "rbxassetid://1876543764", "rbxassetid://1876544642"},
+    ["SpongeBob"] = {"rbxassetid://7633178166", "rbxassetid://7633178166", "rbxassetid://7633178166", "rbxassetid://7633178166", "rbxassetid://7633178166", "rbxassetid://7633178166"},
+    ["Skibidi"] = {"rbxassetid://14952256113", "rbxassetid://14952256113", "rbxassetid://14952256113", "rbxassetid://14952256113", "rbxassetid://14952256113", "rbxassetid://14952256113"},
+    ["Blaze"] = {"rbxassetid://150939022", "rbxassetid://150939038", "rbxassetid://150939047", "rbxassetid://150939056", "rbxassetid://150939063", "rbxassetid://150939082"},
+    ["Pussy Cat"] = {"rbxassetid://11154422902", "rbxassetid://11154422902", "rbxassetid://11154422902", "rbxassetid://11154422902", "rbxassetid://11154422902", "rbxassetid://11154422902"},
+    ["Among Us"] = {"rbxassetid://5752463190", "rbxassetid://5752463190", "rbxassetid://5752463190", "rbxassetid://5752463190", "rbxassetid://5752463190", "rbxassetid://5752463190"},
+    ["Space Wave"] = {"rbxassetid://16262356578", "rbxassetid://16262358026", "rbxassetid://16262360469", "rbxassetid://16262362003", "rbxassetid://16262363873", "rbxassetid://16262366016"},
+    ["Space Wave2"] = {"rbxassetid://1233158420", "rbxassetid://1233158838", "rbxassetid://1233157105", "rbxassetid://1233157640", "rbxassetid://1233157995", "rbxassetid://1233159158"},
+    ["Turquoise Wave"] = {"rbxassetid://47974894", "rbxassetid://47974690", "rbxassetid://47974821", "rbxassetid://47974776", "rbxassetid://47974859", "rbxassetid://47974909"},
+    ["Dark Night"] = {"rbxassetid://6285719338", "rbxassetid://6285721078", "rbxassetid://6285722964", "rbxassetid://6285724682", "rbxassetid://6285726335", "rbxassetid://6285730635"},
+    ["Bright Pink"] = {"rbxassetid://271042516", "rbxassetid://271077243", "rbxassetid://271042556", "rbxassetid://271042310", "rbxassetid://271042467", "rbxassetid://271077958"},
+    ["White Galaxy"] = {"rbxassetid://5540798456", "rbxassetid://5540799894", "rbxassetid://5540801779", "rbxassetid://5540801192", "rbxassetid://5540799108", "rbxassetid://5540800635"},
+    ["Blue Galaxy"] = {"rbxassetid://14961495673", "rbxassetid://14961494492", "rbxassetid://14961492844", "rbxassetid://14961491298", "rbxassetid://14961490439", "rbxassetid://14961489508"},
 }
 
 local MaterialMap = {
@@ -1195,7 +1206,7 @@ WorldTab:New("Title")({ Title = "Environment" })
 
 TrackedDropdown(WorldTab, "Custom Skybox", {
     Title = "Custom Skybox",
-    Options = {"Default", "Galaxy", "Sunset", "Night Sky", "Cloudy", "Vaporwave", "Red"},
+    Options = {"Default", "Vaporwave", "Redshift", "Desert", "DaBaby", "Minecraft", "SpongeBob", "Skibidi", "Blaze", "Pussy Cat", "Among Us", "Space Wave", "Space Wave2", "Turquoise Wave", "Dark Night", "Bright Pink", "White Galaxy", "Blue Galaxy"},
     Default = "Default",
     Callback = function(v)
         WorldVisualSettings.CustomSkybox = v
