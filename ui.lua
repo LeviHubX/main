@@ -1075,7 +1075,10 @@ function MacLib:Window(Settings)
 					toggleSearch(false)
 					if item.TabSelect then item.TabSelect() end
 					if item.ScrollTarget and item.ScrollingFrame then
-						item.ScrollingFrame.CanvasPosition = Vector2.new(0, math.max(0, item.ScrollTarget.AbsolutePosition.Y - item.ScrollingFrame.AbsolutePosition.Y + item.ScrollingFrame.CanvasPosition.Y - 10))
+						task.spawn(function()
+							task.wait()
+							item.ScrollingFrame.CanvasPosition = Vector2.new(0, math.max(0, item.ScrollTarget.AbsolutePosition.Y - item.ScrollingFrame.AbsolutePosition.Y + item.ScrollingFrame.CanvasPosition.Y - 10))
+						end)
 					end
 				end)
 			end
