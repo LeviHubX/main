@@ -384,13 +384,16 @@
     -- Get swords controller
     local swordsController
     task.spawn(function()
-        while task.wait() and not swordsController do
-            for i, v in getconnections(rs.Remotes.FireSwordInfo.OnClientEvent) do
-                if v.Function and islclosure(v.Function) then
-                    local upvalues = getupvalues(v.Function)
-                    if #upvalues == 1 and type(upvalues[1]) == "table" then
-                        swordsController = upvalues[1]
-                        break
+        while task.wait(0.5) and not swordsController do
+            local success, conns = pcall(getconnections, rs.Remotes.FireSwordInfo.OnClientEvent)
+            if success and type(conns) == "table" then
+                for _, v in ipairs(conns) do
+                    if v.Function and islclosure(v.Function) then
+                        local upvalues = getupvalues(v.Function)
+                        if #upvalues == 1 and type(upvalues[1]) == "table" then
+                            swordsController = upvalues[1]
+                            break
+                        end
                     end
                 end
             end
@@ -435,13 +438,33 @@
     -- Hook parry success
     local playParryFunc
     local parrySuccessAllConnection
+    local getinfo = getinfo or (debug and debug.getinfo)
     task.spawn(function()
-        while task.wait() and not parrySuccessAllConnection do
-            for i, v in getconnections(rs.Remotes.ParrySuccessAll.OnClientEvent) do
-                if v.Function and getinfo(v.Function).name == "parrySuccessAll" then
-                    parrySuccessAllConnection = v
-                    playParryFunc = v.Function
-                    v:Disable()
+        while task.wait(0.5) and not parrySuccessAllConnection do
+            local success, conns = pcall(getconnections, rs.Remotes.ParrySuccessAll.OnClientEvent)
+            if success and type(conns) == "table" then
+                for _, v in ipairs(conns) do
+                    if v.Function then
+                        local isMatch = false
+                        if getinfo then
+                            local ok, info = pcall(getinfo, v.Function)
+                            if ok and info then
+                                if info.name == "parrySuccessAll" or info.name == "" or not info.name then
+                                    isMatch = true
+                                end
+                            else
+                                isMatch = true
+                            end
+                        else
+                            isMatch = true
+                        end
+                        if isMatch then
+                            parrySuccessAllConnection = v
+                            playParryFunc = v.Function
+                            v:Disable()
+                            break
+                        end
+                    end
                 end
             end
         end
