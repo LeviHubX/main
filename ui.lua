@@ -1685,6 +1685,222 @@ function MacLib:Window(Settings)
 
 			elementsScrolling.Parent = elements1
 
+			-- ============================================================
+			-- TabFunctions:SkinGrid(Settings)
+			-- Settings = {
+			--   Swords = { { Name="...", Rarity="Unique/Limited/Secret", Image="rbxassetid://..." } },
+			--   OnApply = function(swordName) end,
+			-- }
+			-- ============================================================
+			function TabFunctions:SkinGrid(Settings)
+				local SkinGridFunctions = {}
+				local swords = Settings.Swords or {}
+				local onApply = Settings.OnApply or function() end
+
+				-- Rarity color map
+				local rarityColors = {
+					Secret    = Color3.fromRGB(255, 85,  85),
+					Limited   = Color3.fromRGB(120, 150, 255),
+					Unique    = Color3.fromRGB(150, 150, 150),
+				}
+
+				-- Wipe default two-column layout; use full width instead
+				left.Visible  = false
+				right.Visible = false
+				elementsScrolling.Size = UDim2.fromScale(1, 1)
+
+				-- Outer wrapper
+				local skinGridWrapper = Instance.new("Frame")
+				skinGridWrapper.Name = "SkinGridWrapper"
+				skinGridWrapper.BackgroundTransparency = 1
+				skinGridWrapper.BorderSizePixel = 0
+				skinGridWrapper.Size = UDim2.fromScale(1, 1)
+				skinGridWrapper.Parent = elementsScrolling
+
+				-- ── Top bar ──────────────────────────────────────────────
+				local topBar = Instance.new("Frame")
+				topBar.Name = "TopBar"
+				topBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+				topBar.BorderSizePixel = 0
+				topBar.Size = UDim2.new(1, 0, 0, 40)
+				topBar.Parent = skinGridWrapper
+
+				-- Search box
+				local searchBg = Instance.new("Frame")
+				searchBg.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+				searchBg.BorderSizePixel = 0
+				searchBg.AnchorPoint = Vector2.new(0.5, 0.5)
+				searchBg.Position = UDim2.fromScale(0.5, 0.5)
+				searchBg.Size = UDim2.new(0.55, 0, 0, 26)
+				searchBg.Parent = topBar
+				Instance.new("UICorner", searchBg).CornerRadius = UDim.new(0, 6)
+
+				local searchBox = Instance.new("TextBox")
+				searchBox.BackgroundTransparency = 1
+				searchBox.PlaceholderText = "Search sword..."
+				searchBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+				searchBox.Text = ""
+				searchBox.TextColor3 = Color3.fromRGB(240, 240, 240)
+				searchBox.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium)
+				searchBox.TextSize = 13
+				searchBox.Size = UDim2.fromScale(1, 1)
+				searchBox.Parent = searchBg
+				local sbPad = Instance.new("UIPadding")
+				sbPad.PaddingLeft = UDim.new(0, 10)
+				sbPad.Parent = searchBox
+
+				-- Count badge
+				local countBadge = Instance.new("TextLabel")
+				countBadge.Name = "CountBadge"
+				countBadge.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold)
+				countBadge.Text = tostring(#swords) .. " swords"
+				countBadge.TextColor3 = Color3.fromRGB(200, 200, 200)
+				countBadge.TextSize = 12
+				countBadge.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+				countBadge.BorderSizePixel = 0
+				countBadge.AnchorPoint = Vector2.new(1, 0.5)
+				countBadge.Position = UDim2.new(1, -10, 0.5, 0)
+				countBadge.Size = UDim2.fromOffset(100, 26)
+				countBadge.Parent = topBar
+				Instance.new("UICorner", countBadge).CornerRadius = UDim.new(0, 6)
+
+				-- ── Grid scroll ───────────────────────────────────────────
+				local gridScroll = Instance.new("ScrollingFrame")
+				gridScroll.Name = "SkinGridScroll"
+				gridScroll.BackgroundTransparency = 1
+				gridScroll.BorderSizePixel = 0
+				gridScroll.Position = UDim2.fromOffset(0, 42)
+				gridScroll.Size = UDim2.new(1, 0, 1, -42)
+				gridScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+				gridScroll.CanvasSize = UDim2.new()
+				gridScroll.ScrollBarThickness = 2
+				gridScroll.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 120)
+				gridScroll.Parent = skinGridWrapper
+
+				local gridLayout = Instance.new("UIGridLayout")
+				gridLayout.CellSize = UDim2.fromOffset(110, 165)
+				gridLayout.CellPadding = UDim2.fromOffset(10, 10)
+				gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+				gridLayout.Parent = gridScroll
+
+				local gridPad = Instance.new("UIPadding")
+				gridPad.PaddingLeft  = UDim.new(0, 10)
+				gridPad.PaddingRight = UDim.new(0, 10)
+				gridPad.PaddingTop   = UDim.new(0, 10)
+				gridPad.Parent = gridScroll
+
+				-- ── Card builder ──────────────────────────────────────────
+				local cardPool = {}
+
+				local function buildCard(sword)
+					local rarityColor = rarityColors[sword.Rarity] or rarityColors.Unique
+
+					local card = Instance.new("Frame")
+					card.Name = sword.Name
+					card.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+					card.BorderSizePixel = 0
+					Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+					local stroke = Instance.new("UIStroke")
+					stroke.Color = Color3.fromRGB(40, 40, 40)
+					stroke.Transparency = 0
+					stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+					stroke.Parent = card
+
+					-- Sword image
+					local img = Instance.new("ImageLabel")
+					img.BackgroundTransparency = 1
+					img.AnchorPoint = Vector2.new(0.5, 0)
+					img.Position = UDim2.fromOffset(55, 8)
+					img.Size = UDim2.fromOffset(94, 90)
+					img.Image = sword.Image or ""
+					img.ScaleType = Enum.ScaleType.Fit
+					img.Parent = card
+
+					-- Sword name
+					local nameLabel = Instance.new("TextLabel")
+					nameLabel.BackgroundTransparency = 1
+					nameLabel.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold)
+					nameLabel.Text = sword.Name
+					nameLabel.TextColor3 = rarityColor
+					nameLabel.TextSize = 11
+					nameLabel.TextWrapped = true
+					nameLabel.AnchorPoint = Vector2.new(0.5, 0)
+					nameLabel.Position = UDim2.fromOffset(55, 104)
+					nameLabel.Size = UDim2.new(1, -10, 0, 28)
+					nameLabel.Parent = card
+
+					-- Rarity label
+					local rarityLabel = Instance.new("TextLabel")
+					rarityLabel.BackgroundTransparency = 1
+					rarityLabel.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium)
+					rarityLabel.Text = sword.Rarity or "Unique"
+					rarityLabel.TextColor3 = Color3.fromRGB(160, 160, 160)
+					rarityLabel.TextSize = 10
+					rarityLabel.AnchorPoint = Vector2.new(0.5, 0)
+					rarityLabel.Position = UDim2.fromOffset(55, 133)
+					rarityLabel.Size = UDim2.new(1, -10, 0, 14)
+					rarityLabel.Parent = card
+
+					-- Apply button
+					local applyBtn = Instance.new("TextButton")
+					applyBtn.BackgroundColor3 = Color3.fromRGB(40, 160, 80)
+					applyBtn.FontFace = Font.new(assets.interFont, Enum.FontWeight.Bold)
+					applyBtn.Text = "Apply"
+					applyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+					applyBtn.TextSize = 12
+					applyBtn.AutoButtonColor = false
+					applyBtn.AnchorPoint = Vector2.new(0.5, 0)
+					applyBtn.Position = UDim2.fromOffset(55, 150)
+					applyBtn.Size = UDim2.new(1, -16, 0, 22)
+					Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0, 5)
+					applyBtn.Parent = card
+
+					applyBtn.MouseEnter:Connect(function()
+						Tween(applyBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(55, 200, 100) }):Play()
+					end)
+					applyBtn.MouseLeave:Connect(function()
+						Tween(applyBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(40, 160, 80) }):Play()
+					end)
+					applyBtn.MouseButton1Click:Connect(function()
+						onApply(sword.Name)
+					end)
+
+					card.Parent = gridScroll
+					table.insert(cardPool, { card = card, sword = sword })
+				end
+
+				for _, sword in ipairs(swords) do
+					buildCard(sword)
+				end
+
+				-- ── Search filter ─────────────────────────────────────────
+				searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+					local query = searchBox.Text:lower()
+					local visible = 0
+					for _, entry in ipairs(cardPool) do
+						local show = query == "" or entry.sword.Name:lower():find(query, 1, true)
+						entry.card.Visible = show ~= nil and show ~= false
+						if entry.card.Visible then visible += 1 end
+					end
+					countBadge.Text = tostring(visible) .. " swords"
+				end)
+
+				function SkinGridFunctions:AddSword(sword)
+					buildCard(sword)
+					countBadge.Text = tostring(#cardPool) .. " swords"
+				end
+
+				function SkinGridFunctions:SetSwords(newSwords)
+					for _, entry in ipairs(cardPool) do entry.card:Destroy() end
+					cardPool = {}
+					for _, sword in ipairs(newSwords) do buildCard(sword) end
+					countBadge.Text = tostring(#cardPool) .. " swords"
+				end
+
+				return SkinGridFunctions
+			end
+
+
 			function TabFunctions:Section(Settings)
 				local SectionFunctions = {}
 				local section = Instance.new("Frame")
