@@ -42,6 +42,7 @@ end
 --// Library Functions
 function MacLib:Window(Settings)
 	local WindowFunctions = {}
+	WindowFunctions.SearchableElements = {}
 	if Settings.AcrylicBlur ~= nil then
 		acrylicBlur = Settings.AcrylicBlur
 	else
@@ -661,6 +662,19 @@ function MacLib:Window(Settings)
 	moveIcon.Size = UDim2.fromOffset(15, 15)
 	moveIcon.Parent = elements
 	moveIcon.Visible = not Settings.DragStyle or Settings.DragStyle == 1
+
+	local searchIconBtn = Instance.new("ImageButton")
+	searchIconBtn.Name = "SearchIconBtn"
+	searchIconBtn.Image = assets.searchIcon
+	searchIconBtn.ImageTransparency = 0.5
+	searchIconBtn.AnchorPoint = Vector2.new(1, 0.5)
+	searchIconBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	searchIconBtn.BackgroundTransparency = 1
+	searchIconBtn.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	searchIconBtn.BorderSizePixel = 0
+	searchIconBtn.Position = UDim2.new(1, -30, 0.5, 0)
+	searchIconBtn.Size = UDim2.fromOffset(15, 15)
+	searchIconBtn.Parent = elements
 	
 	local interact = Instance.new("TextButton")
 	interact.Name = "Interact"
@@ -676,6 +690,19 @@ function MacLib:Window(Settings)
 	interact.Position = UDim2.fromScale(0.5, 0.5)
 	interact.Size = UDim2.fromOffset(30, 30)
 	interact.Parent = moveIcon
+
+	local searchInteract = Instance.new("TextButton")
+	searchInteract.Name = "Interact"
+	searchInteract.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
+	searchInteract.Text = ""
+	searchInteract.AnchorPoint = Vector2.new(0.5, 0.5)
+	searchInteract.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	searchInteract.BackgroundTransparency = 1
+	searchInteract.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	searchInteract.BorderSizePixel = 0
+	searchInteract.Position = UDim2.fromScale(0.5, 0.5)
+	searchInteract.Size = UDim2.fromOffset(30, 30)
+	searchInteract.Parent = searchIconBtn
 
 	local function ChangemoveIconState(State)
 		if State == "Default" then
@@ -694,6 +721,13 @@ function MacLib:Window(Settings)
 	end)
 	interact.MouseLeave:Connect(function()
 		ChangemoveIconState("Default")
+	end)
+
+	searchInteract.MouseEnter:Connect(function()
+		Tween(searchIconBtn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 0.2 }):Play()
+	end)
+	searchInteract.MouseLeave:Connect(function()
+		Tween(searchIconBtn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 0.5 }):Play()
 	end)
 
 	local dragging_ = false
@@ -799,6 +833,111 @@ function MacLib:Window(Settings)
 	topbar.Parent = content
 
 	content.Parent = base
+
+	local searchFrame = Instance.new("Frame")
+	searchFrame.Name = "GlobalSearch"
+	searchFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+	searchFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	searchFrame.BorderSizePixel = 0
+	searchFrame.Position = UDim2.fromScale(0.5, 0.1)
+	searchFrame.AnchorPoint = Vector2.new(0.5, 0)
+	searchFrame.Size = UDim2.fromOffset(300, 300)
+	searchFrame.Visible = false
+	searchFrame.ZIndex = 10
+	searchFrame.Parent = base
+
+	local searchFrameUICorner = Instance.new("UICorner")
+	searchFrameUICorner.CornerRadius = UDim.new(0, 10)
+	searchFrameUICorner.Parent = searchFrame
+
+	local searchFrameUIStroke = Instance.new("UIStroke")
+	searchFrameUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	searchFrameUIStroke.Color = Color3.fromRGB(255, 255, 255)
+	searchFrameUIStroke.Transparency = 0.9
+	searchFrameUIStroke.Parent = searchFrame
+
+	local searchBoxWrapper = Instance.new("Frame")
+	searchBoxWrapper.Name = "SearchBoxWrapper"
+	searchBoxWrapper.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	searchBoxWrapper.Size = UDim2.new(1, -20, 0, 30)
+	searchBoxWrapper.Position = UDim2.fromOffset(10, 10)
+	searchBoxWrapper.Parent = searchFrame
+
+	local searchBoxWrapperUICorner = Instance.new("UICorner")
+	searchBoxWrapperUICorner.CornerRadius = UDim.new(0, 5)
+	searchBoxWrapperUICorner.Parent = searchBoxWrapper
+
+	local globalSearchBox = Instance.new("TextBox")
+	globalSearchBox.Name = "SearchBox"
+	globalSearchBox.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
+	globalSearchBox.PlaceholderText = "Search features..."
+	globalSearchBox.Text = ""
+	globalSearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+	globalSearchBox.TextSize = 14
+	globalSearchBox.BackgroundTransparency = 1
+	globalSearchBox.Size = UDim2.fromScale(1, 1)
+	globalSearchBox.TextXAlignment = Enum.TextXAlignment.Left
+	globalSearchBox.Parent = searchBoxWrapper
+
+	local globalSearchBoxPadding = Instance.new("UIPadding")
+	globalSearchBoxPadding.PaddingLeft = UDim.new(0, 10)
+	globalSearchBoxPadding.Parent = globalSearchBox
+
+	local searchResultsScroll = Instance.new("ScrollingFrame")
+	searchResultsScroll.Name = "SearchResults"
+	searchResultsScroll.BackgroundTransparency = 1
+	searchResultsScroll.BorderSizePixel = 0
+	searchResultsScroll.Position = UDim2.fromOffset(10, 50)
+	searchResultsScroll.Size = UDim2.new(1, -20, 1, -60)
+	searchResultsScroll.ScrollBarThickness = 2
+	searchResultsScroll.Parent = searchFrame
+	
+	local searchResultsLayout = Instance.new("UIListLayout")
+	searchResultsLayout.Padding = UDim.new(0, 5)
+	searchResultsLayout.Parent = searchResultsScroll
+
+	searchInteract.MouseButton1Click:Connect(function()
+		searchFrame.Visible = not searchFrame.Visible
+		if searchFrame.Visible then
+			globalSearchBox:CaptureFocus()
+			globalSearchBox.Text = ""
+		end
+	end)
+
+	local function updateSearchResults()
+		for _, child in pairs(searchResultsScroll:GetChildren()) do
+			if child:IsA("TextButton") then child:Destroy() end
+		end
+		local query = globalSearchBox.Text:lower()
+		local count = 0
+		for _, item in pairs(WindowFunctions.SearchableElements) do
+			if query == "" or item.Name:lower():find(query) then
+				count = count + 1
+				local btn = Instance.new("TextButton")
+				btn.Size = UDim2.new(1, -10, 0, 30)
+				btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+				btn.Text = item.Name .. " (" .. item.Type .. ")"
+				btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				btn.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium)
+				btn.TextSize = 13
+				btn.AutoButtonColor = false
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 5)
+				corner.Parent = btn
+				btn.Parent = searchResultsScroll
+
+				btn.MouseButton1Click:Connect(function()
+					searchFrame.Visible = false
+					if item.TabSelect then item.TabSelect() end
+					if item.ScrollTarget and item.ScrollingFrame then
+						item.ScrollingFrame.CanvasPosition = Vector2.new(0, math.max(0, item.ScrollTarget.AbsolutePosition.Y - item.ScrollingFrame.AbsolutePosition.Y + item.ScrollingFrame.CanvasPosition.Y - 10))
+					end
+				end)
+			end
+		end
+		searchResultsScroll.CanvasSize = UDim2.new(0, 0, 0, count * 35)
+	end
+	globalSearchBox:GetPropertyChangedSignal("Text"):Connect(updateSearchResults)
 
 	local globalSettings = Instance.new("Frame")
 	globalSettings.Name = "GlobalSettings"
@@ -1595,6 +1734,15 @@ function MacLib:Window(Settings)
 					end)
 
 					buttonInteract.MouseButton1Click:Connect(Callback)
+					
+					table.insert(WindowFunctions.SearchableElements, {
+						Name = Settings.Name,
+						Type = "Button",
+						TabSelect = function() SelectCurrentTab() end,
+						ScrollTarget = button,
+						ScrollingFrame = elementsScrolling
+					})
+
 					function ButtonFunctions:UpdateName(Name)
 						buttonInteract.Text = Name
 					end
@@ -1730,6 +1878,14 @@ function MacLib:Window(Settings)
 					end
 
 					toggle1.MouseButton1Click:Connect(Toggle)
+
+					table.insert(WindowFunctions.SearchableElements, {
+						Name = Settings.Name,
+						Type = "Toggle",
+						TabSelect = function() SelectCurrentTab() end,
+						ScrollTarget = toggle,
+						ScrollingFrame = elementsScrolling
+					})
 
 					function ToggleFunctions:Toggle()
 						Toggle()
@@ -1990,6 +2146,14 @@ function MacLib:Window(Settings)
 					sliderName:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateSliderBarSize)
 					section:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateSliderBarSize)
 
+					table.insert(WindowFunctions.SearchableElements, {
+						Name = Settings.Name,
+						Type = "Slider",
+						TabSelect = function() SelectCurrentTab() end,
+						ScrollTarget = slider,
+						ScrollingFrame = elementsScrolling
+					})
+
 					function SliderFunctions:UpdateName(Name)
 						sliderName = Name
 					end
@@ -2146,6 +2310,14 @@ function MacLib:Window(Settings)
 						InputFunctions.Text = InputBox.Text
 					end)
 
+					table.insert(WindowFunctions.SearchableElements, {
+						Name = Settings.Name,
+						Type = "Input",
+						TabSelect = function() SelectCurrentTab() end,
+						ScrollTarget = input,
+						ScrollingFrame = elementsScrolling
+					})
+
 					function InputFunctions:UpdateName(Name)
 						inputName.Text = Name
 					end
@@ -2278,6 +2450,15 @@ function MacLib:Window(Settings)
 							end
 						end
 					end)
+					
+					table.insert(WindowFunctions.SearchableElements, {
+						Name = Settings.Name,
+						Type = "Keybind",
+						TabSelect = function() SelectCurrentTab() end,
+						ScrollTarget = keybind,
+						ScrollingFrame = elementsScrolling
+					})
+
 					function KeybindFunctions:Bind(Key)
 						binded = Key
 						binderBox.Text = Key.Name
@@ -2761,6 +2942,14 @@ function MacLib:Window(Settings)
 						addOption(i, v)
 					end
 					
+					table.insert(WindowFunctions.SearchableElements, {
+						Name = Settings.Name,
+						Type = "Dropdown",
+						TabSelect = function() SelectCurrentTab() end,
+						ScrollTarget = dropdown,
+						ScrollingFrame = elementsScrolling
+					})
+
 					function DropdownFunctions:UpdateName(New)
 						dropdownName.Text = New
 					end
@@ -4108,6 +4297,14 @@ function MacLib:Window(Settings)
 					
 					updateFromSettings()
 					
+					table.insert(WindowFunctions.SearchableElements, {
+						Name = Settings.Name,
+						Type = "Colorpicker",
+						TabSelect = function() SelectCurrentTab() end,
+						ScrollTarget = colorpicker,
+						ScrollingFrame = elementsScrolling
+					})
+
 					function ColorpickerFunctions:UpdateName(New)
 						colorpickerName.Text = New
 					end
