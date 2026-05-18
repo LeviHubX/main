@@ -68,6 +68,77 @@ function MacLib:Window(Settings)
 	notifications.Parent = macLib
 	notifications.ZIndex = 2
 
+	local tooltipCanvas = Instance.new("CanvasGroup")
+	tooltipCanvas.Name = "Tooltip"
+	tooltipCanvas.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	tooltipCanvas.BackgroundTransparency = 0.2
+	tooltipCanvas.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	tooltipCanvas.BorderSizePixel = 0
+	tooltipCanvas.AutomaticSize = Enum.AutomaticSize.XY
+	tooltipCanvas.GroupTransparency = 1
+	tooltipCanvas.ZIndex = 100
+	tooltipCanvas.Visible = false
+	tooltipCanvas.Parent = macLib
+
+	local tooltipCorner = Instance.new("UICorner")
+	tooltipCorner.CornerRadius = UDim.new(0, 6)
+	tooltipCorner.Parent = tooltipCanvas
+
+	local tooltipStroke = Instance.new("UIStroke")
+	tooltipStroke.Color = Color3.fromRGB(255, 255, 255)
+	tooltipStroke.Transparency = 0.9
+	tooltipStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	tooltipStroke.Parent = tooltipCanvas
+
+	local tooltipPadding = Instance.new("UIPadding")
+	tooltipPadding.PaddingBottom = UDim.new(0, 6)
+	tooltipPadding.PaddingLeft = UDim.new(0, 10)
+	tooltipPadding.PaddingRight = UDim.new(0, 10)
+	tooltipPadding.PaddingTop = UDim.new(0, 6)
+	tooltipPadding.Parent = tooltipCanvas
+
+	local tooltipText = Instance.new("TextLabel")
+	tooltipText.Name = "TooltipText"
+	tooltipText.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium)
+	tooltipText.Text = ""
+	tooltipText.TextColor3 = Color3.fromRGB(255, 255, 255)
+	tooltipText.TextSize = 13
+	tooltipText.BackgroundTransparency = 1
+	tooltipText.AutomaticSize = Enum.AutomaticSize.XY
+	tooltipText.Parent = tooltipCanvas
+
+	local tooltipTweenIn, tooltipTweenOut
+	local tooltipFollowConnection
+	
+	local function ShowTooltip(text)
+		tooltipText.Text = text
+		tooltipCanvas.Visible = true
+		if tooltipTweenOut then tooltipTweenOut:Cancel() end
+		tooltipTweenIn = TweenService:Create(tooltipCanvas, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { GroupTransparency = 0 })
+		tooltipTweenIn:Play()
+
+		if tooltipFollowConnection then tooltipFollowConnection:Disconnect() end
+		tooltipFollowConnection = game:GetService("RunService").RenderStepped:Connect(function()
+			local mousePos = game:GetService("UserInputService"):GetMouseLocation()
+			tooltipCanvas.Position = UDim2.fromOffset(mousePos.X + 15, mousePos.Y + 15)
+		end)
+	end
+
+	local function HideTooltip()
+		if tooltipTweenIn then tooltipTweenIn:Cancel() end
+		tooltipTweenOut = TweenService:Create(tooltipCanvas, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { GroupTransparency = 1 })
+		tooltipTweenOut:Play()
+		tooltipTweenOut.Completed:Once(function()
+			if tooltipCanvas.GroupTransparency == 1 then
+				tooltipCanvas.Visible = false
+				if tooltipFollowConnection then 
+					tooltipFollowConnection:Disconnect() 
+					tooltipFollowConnection = nil
+				end
+			end
+		end)
+	end
+
 	local notificationsUIListLayout = Instance.new("UIListLayout")
 	notificationsUIListLayout.Name = "NotificationsUIListLayout"
 	notificationsUIListLayout.Padding = UDim.new(0, 10)
@@ -1802,9 +1873,11 @@ function MacLib:Window(Settings)
 
 					buttonInteract.MouseEnter:Connect(function()
 						ChangeState("Hover")
+						if Settings.Tooltip then ShowTooltip(Settings.Tooltip) end
 					end)
 					buttonInteract.MouseLeave:Connect(function()
 						ChangeState("Idle")
+						if Settings.Tooltip then HideTooltip() end
 					end)
 
 					buttonInteract.MouseButton1Click:Connect(Callback)
@@ -2217,6 +2290,11 @@ function MacLib:Window(Settings)
 
 					updateSliderBarSize()
 
+					if Settings.Tooltip then
+						slider.MouseEnter:Connect(function() ShowTooltip(Settings.Tooltip) end)
+						slider.MouseLeave:Connect(function() HideTooltip() end)
+					end
+
 					sliderName:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateSliderBarSize)
 					section:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateSliderBarSize)
 
@@ -2384,6 +2462,11 @@ function MacLib:Window(Settings)
 						InputFunctions.Text = InputBox.Text
 					end)
 
+					if Settings.Tooltip then
+						input.MouseEnter:Connect(function() ShowTooltip(Settings.Tooltip) end)
+						input.MouseLeave:Connect(function() HideTooltip() end)
+					end
+
 					table.insert(WindowFunctions.SearchableElements, {
 						Name = Settings.Name,
 						Type = "Input",
@@ -2506,6 +2589,11 @@ function MacLib:Window(Settings)
 					binderBox.FocusLost:Connect(function()
 						focused = false
 					end)
+				
+					if Settings.Tooltip then
+						keybind.MouseEnter:Connect(function() ShowTooltip(Settings.Tooltip) end)
+						keybind.MouseLeave:Connect(function() HideTooltip() end)
+					end
 				
 					UserInputService.InputEnded:Connect(function(inp)
 						if macLib ~= nil then
@@ -2858,6 +2946,11 @@ function MacLib:Window(Settings)
 					end
 
 					interact.MouseButton1Click:Connect(ToggleDropdown)
+					
+					if Settings.Tooltip then
+						interact.MouseEnter:Connect(function() ShowTooltip(Settings.Tooltip) end)
+						interact.MouseLeave:Connect(function() HideTooltip() end)
+					end
 					
 					local function addOption(i, v)
 						local option = Instance.new("TextButton")
@@ -4348,6 +4441,11 @@ function MacLib:Window(Settings)
 					end
 
 					interact.MouseButton1Click:Connect(colorpickerIn)
+					
+					if Settings.Tooltip then
+						interact.MouseEnter:Connect(function() ShowTooltip(Settings.Tooltip) end)
+						interact.MouseLeave:Connect(function() HideTooltip() end)
+					end
 					
 					cancel.MouseButton1Click:Connect(colorpickerOut)
 					confirm.MouseButton1Click:Connect(function()
