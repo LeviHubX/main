@@ -1701,9 +1701,7 @@ function MacLib:Window(Settings)
 				}
 
 				-- Wipe default two-column layout; use full width instead
-				left.Visible  = false
-				right.Visible = false
-				elementsScrolling.Size = UDim2.fromScale(1, 1)
+				elementsScrolling.Visible = false
 
 				-- Outer wrapper
 				local skinGridWrapper = Instance.new("Frame")
@@ -1711,7 +1709,7 @@ function MacLib:Window(Settings)
 				skinGridWrapper.BackgroundTransparency = 1
 				skinGridWrapper.BorderSizePixel = 0
 				skinGridWrapper.Size = UDim2.fromScale(1, 1)
-				skinGridWrapper.Parent = elementsScrolling
+				skinGridWrapper.Parent = elements1
 
 				-- Top bar
 				local topBar = Instance.new("Frame")
