@@ -873,13 +873,29 @@ function MacLib:Window(Settings)
 	local searchBoxWrapper = Instance.new("Frame")
 	searchBoxWrapper.Name = "SearchBoxWrapper"
 	searchBoxWrapper.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-	searchBoxWrapper.Size = UDim2.new(1, -20, 0, 36)
+	searchBoxWrapper.Size = UDim2.new(1, -56, 0, 36)
 	searchBoxWrapper.Position = UDim2.fromOffset(10, 10)
 	searchBoxWrapper.Parent = searchFrame
 
 	local searchBoxWrapperUICorner = Instance.new("UICorner")
 	searchBoxWrapperUICorner.CornerRadius = UDim.new(0, 6)
 	searchBoxWrapperUICorner.Parent = searchBoxWrapper
+
+	local closeSearchBtn = Instance.new("TextButton")
+	closeSearchBtn.Name = "CloseSearchBtn"
+	closeSearchBtn.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold)
+	closeSearchBtn.Text = "X"
+	closeSearchBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+	closeSearchBtn.TextSize = 15
+	closeSearchBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	closeSearchBtn.Size = UDim2.fromOffset(36, 36)
+	closeSearchBtn.Position = UDim2.new(1, -46, 0, 10)
+	closeSearchBtn.AutoButtonColor = false
+	closeSearchBtn.Parent = searchFrame
+
+	local closeSearchBtnUICorner = Instance.new("UICorner")
+	closeSearchBtnUICorner.CornerRadius = UDim.new(0, 6)
+	closeSearchBtnUICorner.Parent = closeSearchBtn
 
 	local globalSearchBox = Instance.new("TextBox")
 	globalSearchBox.Name = "SearchBox"
@@ -933,6 +949,18 @@ function MacLib:Window(Settings)
 
 	searchInteract.MouseButton1Click:Connect(function()
 		toggleSearch()
+	end)
+
+	closeSearchBtn.MouseButton1Click:Connect(function()
+		toggleSearch(false)
+	end)
+
+	closeSearchBtn.MouseEnter:Connect(function()
+		Tween(closeSearchBtn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(220, 50, 50), TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+	end)
+
+	closeSearchBtn.MouseLeave:Connect(function()
+		Tween(closeSearchBtn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(25, 25, 25), TextColor3 = Color3.fromRGB(200, 200, 200) }):Play()
 	end)
 
 	local function updateSearchResults()
