@@ -4744,6 +4744,294 @@ function MacLib:Window(Settings)
 			return TabFunctions
 		end
 
+		function SectionFunctions:SkinChangerTab(Settings)
+			local SkinChangerFunctions = {}
+			-- Create tabSwitcher
+			local tabSwitcher = Instance.new("TextButton")
+			tabSwitcher.Name = "TabSwitcher"
+			tabSwitcher.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
+			tabSwitcher.Text = ""
+			tabSwitcher.TextColor3 = Color3.fromRGB(0, 0, 0)
+			tabSwitcher.TextSize = 14
+			tabSwitcher.AutoButtonColor = false
+			tabSwitcher.AnchorPoint = Vector2.new(0.5, 0)
+			tabSwitcher.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			tabSwitcher.BackgroundTransparency = 1
+			tabSwitcher.Position = UDim2.fromScale(0.5, 0)
+			tabSwitcher.Size = UDim2.new(1, -21, 0, 40)
+
+			tabIndex += 1
+			tabSwitcher.LayoutOrder = tabIndex
+
+			local tabSwitcherUICorner = Instance.new("UICorner")
+			tabSwitcherUICorner.Parent = tabSwitcher
+
+			local tabSwitcherUIStroke = Instance.new("UIStroke")
+			tabSwitcherUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			tabSwitcherUIStroke.Color = Color3.fromRGB(255, 255, 255)
+			tabSwitcherUIStroke.Transparency = 1
+			tabSwitcherUIStroke.Parent = tabSwitcher
+
+			local tabSwitcherUIListLayout = Instance.new("UIListLayout")
+			tabSwitcherUIListLayout.Padding = UDim.new(0, 9)
+			tabSwitcherUIListLayout.FillDirection = Enum.FillDirection.Horizontal
+			tabSwitcherUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			tabSwitcherUIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			tabSwitcherUIListLayout.Parent = tabSwitcher
+
+			if Settings.Image then
+				local tabImage = Instance.new("ImageLabel")
+				tabImage.Image = Settings.Image
+				tabImage.ImageTransparency = 0.4
+				tabImage.BackgroundTransparency = 1
+				tabImage.Size = UDim2.fromOffset(16, 16)
+				tabImage.Parent = tabSwitcher
+			end
+
+			local tabSwitcherName = Instance.new("TextLabel")
+			tabSwitcherName.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold)
+			tabSwitcherName.Text = Settings.Name
+			tabSwitcherName.TextColor3 = Color3.fromRGB(255, 255, 255)
+			tabSwitcherName.TextSize = 16
+			tabSwitcherName.TextTransparency = 0.4
+			tabSwitcherName.TextXAlignment = Enum.TextXAlignment.Left
+			tabSwitcherName.TextYAlignment = Enum.TextYAlignment.Top
+			tabSwitcherName.AutomaticSize = Enum.AutomaticSize.Y
+			tabSwitcherName.BackgroundTransparency = 1
+			tabSwitcherName.Size = UDim2.fromScale(1, 0)
+			tabSwitcherName.Parent = tabSwitcher
+
+			local tabSwitcherUIPadding = Instance.new("UIPadding")
+			tabSwitcherUIPadding.PaddingLeft = UDim.new(0, 24)
+			tabSwitcherUIPadding.PaddingTop = UDim.new(0, 1)
+			tabSwitcherUIPadding.Parent = tabSwitcher
+
+			tabSwitcher.Parent = sectionTabSwitchers
+
+			-- Main Elements Frame
+			local elements1 = Instance.new("Frame")
+			elements1.Name = "Elements"
+			elements1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			elements1.BackgroundTransparency = 1
+			elements1.Position = UDim2.fromOffset(0, 63)
+			elements1.Size = UDim2.new(1, 0, 1, -63)
+
+			local elementsUIPadding = Instance.new("UIPadding")
+			elementsUIPadding.PaddingRight = UDim.new(0, 5)
+			elementsUIPadding.PaddingTop = UDim.new(0, 10)
+			elementsUIPadding.Parent = elements1
+
+			-- Search Box and Count at the top
+			local topBar = Instance.new("Frame")
+			topBar.Name = "TopBar"
+			topBar.BackgroundColor3 = Color3.fromRGB(25, 20, 20)
+			topBar.BackgroundTransparency = 0.3
+			topBar.Size = UDim2.new(1, -20, 0, 45)
+			topBar.Position = UDim2.new(0, 10, 0, 0)
+			topBar.Parent = elements1
+			local topUICorner = Instance.new("UICorner", topBar)
+			topUICorner.CornerRadius = UDim.new(0, 8)
+
+			local searchBox = Instance.new("TextBox")
+			searchBox.Name = "SearchBox"
+			searchBox.PlaceholderText = "Search sword..."
+			searchBox.Text = ""
+			searchBox.FontFace = Font.new(assets.interFont)
+			searchBox.TextColor3 = Color3.fromRGB(200, 200, 200)
+			searchBox.TextSize = 16
+			searchBox.BackgroundTransparency = 1
+			searchBox.Size = UDim2.new(1, -150, 1, 0)
+			searchBox.Position = UDim2.new(0, 20, 0, 0)
+			searchBox.TextXAlignment = Enum.TextXAlignment.Left
+			searchBox.Parent = topBar
+
+			local countLabel = Instance.new("TextLabel")
+			countLabel.Name = "CountLabel"
+			countLabel.Text = "0 swords"
+			countLabel.FontFace = Font.new(assets.interFont)
+			countLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+			countLabel.TextSize = 14
+			countLabel.BackgroundTransparency = 1
+			countLabel.Size = UDim2.new(0, 100, 1, 0)
+			countLabel.Position = UDim2.new(1, -120, 0, 0)
+			countLabel.TextXAlignment = Enum.TextXAlignment.Right
+			countLabel.Parent = topBar
+
+			-- Grid Scrolling
+			local elementsScrolling = Instance.new("ScrollingFrame")
+			elementsScrolling.Name = "GridScrolling"
+			elementsScrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+			elementsScrolling.CanvasSize = UDim2.new()
+			elementsScrolling.ScrollBarImageTransparency = 0.5
+			elementsScrolling.ScrollBarThickness = 2
+			elementsScrolling.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			elementsScrolling.BackgroundTransparency = 1
+			elementsScrolling.BorderSizePixel = 0
+			elementsScrolling.Position = UDim2.new(0, 0, 0, 60)
+			elementsScrolling.Size = UDim2.new(1, 0, 1, -60)
+			elementsScrolling.Parent = elements1
+
+			local gridLayout = Instance.new("UIGridLayout")
+			gridLayout.Name = "GridLayout"
+			gridLayout.CellPadding = UDim2.new(0, 12, 0, 12)
+			-- Adjusted cell size for the swords like the image
+			gridLayout.CellSize = UDim2.new(0, 160, 0, 220)
+			gridLayout.FillDirection = Enum.FillDirection.Horizontal
+			gridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+			gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			gridLayout.Parent = elementsScrolling
+
+			local elementsScrollingUIPadding = Instance.new("UIPadding")
+			elementsScrollingUIPadding.PaddingBottom = UDim.new(0, 15)
+			elementsScrollingUIPadding.PaddingTop = UDim.new(0, 5)
+			elementsScrollingUIPadding.Parent = elementsScrolling
+
+			local cards = {}
+
+			function SkinChangerFunctions:AddCard(CardSettings)
+				local card = Instance.new("Frame")
+				card.Name = CardSettings.Name or "Card"
+				card.BackgroundColor3 = Color3.fromRGB(15, 10, 10)
+				card.BackgroundTransparency = 0.1
+				card.Parent = elementsScrolling
+				local cardCorner = Instance.new("UICorner", card)
+				cardCorner.CornerRadius = UDim.new(0, 8)
+				
+				local cardStroke = Instance.new("UIStroke", card)
+				cardStroke.Color = Color3.fromRGB(255, 255, 255)
+				cardStroke.Transparency = 0.95
+				cardStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+				-- Image Container
+				local imgContainer = Instance.new("Frame")
+				imgContainer.BackgroundColor3 = Color3.fromRGB(25, 20, 20)
+				imgContainer.Size = UDim2.new(1, -16, 0, 120)
+				imgContainer.Position = UDim2.new(0, 8, 0, 8)
+				imgContainer.Parent = card
+				local imgCorner = Instance.new("UICorner", imgContainer)
+				imgCorner.CornerRadius = UDim.new(0, 6)
+
+				if CardSettings.Image then
+					local img = Instance.new("ImageLabel")
+					img.BackgroundTransparency = 1
+					img.Size = UDim2.new(1, 0, 1, 0)
+					img.Image = CardSettings.Image
+					img.ScaleType = Enum.ScaleType.Fit
+					img.Parent = imgContainer
+				end
+
+				-- Name
+				local nameLabel = Instance.new("TextLabel")
+				nameLabel.Text = CardSettings.Name or "Sword"
+				nameLabel.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold)
+				nameLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+				nameLabel.TextSize = 14
+				nameLabel.BackgroundTransparency = 1
+				nameLabel.Size = UDim2.new(1, 0, 0, 20)
+				nameLabel.Position = UDim2.new(0, 0, 0, 135)
+				nameLabel.Parent = card
+
+				-- Rarity/Type
+				local rarityLabel = Instance.new("TextLabel")
+				rarityLabel.Text = CardSettings.Rarity or "Unique"
+				rarityLabel.FontFace = Font.new(assets.interFont)
+				rarityLabel.TextColor3 = Color3.fromRGB(120, 120, 120)
+				rarityLabel.TextSize = 12
+				rarityLabel.BackgroundTransparency = 1
+				rarityLabel.Size = UDim2.new(1, 0, 0, 15)
+				rarityLabel.Position = UDim2.new(0, 0, 0, 155)
+				rarityLabel.Parent = card
+
+				-- Apply Button
+				local applyBtn = Instance.new("TextButton")
+				applyBtn.Text = "Apply"
+				applyBtn.FontFace = Font.new(assets.interFont, Enum.FontWeight.Bold)
+				applyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				applyBtn.TextSize = 14
+				applyBtn.BackgroundColor3 = Color3.fromRGB(70, 140, 70)
+				applyBtn.Size = UDim2.new(1, -20, 0, 30)
+				applyBtn.Position = UDim2.new(0, 10, 1, -38)
+				applyBtn.Parent = card
+				local btnCorner = Instance.new("UICorner", applyBtn)
+				btnCorner.CornerRadius = UDim.new(0, 6)
+
+				applyBtn.MouseButton1Click:Connect(function()
+					if CardSettings.Callback then
+						CardSettings.Callback()
+					end
+				end)
+				
+				-- Hover effects for button
+				applyBtn.MouseEnter:Connect(function()
+					Tween(applyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(90, 160, 90)}):Play()
+				end)
+				applyBtn.MouseLeave:Connect(function()
+					Tween(applyBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 140, 70)}):Play()
+				end)
+				
+				table.insert(cards, {frame = card, name = (CardSettings.Name or ""):lower()})
+				countLabel.Text = #cards .. " swords"
+				
+				return card
+			end
+
+			-- Search Logic
+			searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+				local query = searchBox.Text:lower()
+				local visibleCount = 0
+				for _, item in ipairs(cards) do
+					if query == "" or string.find(item.name, query) then
+						item.frame.Visible = true
+						visibleCount = visibleCount + 1
+					else
+						item.frame.Visible = false
+					end
+				end
+				countLabel.Text = visibleCount .. " swords"
+			end)
+
+			local function SelectCurrentTab()
+				local easetime = 0.15
+
+				if currentTabInstance then
+					currentTabInstance.Parent = nil
+				end
+
+				for _, v in pairs(tabSwitchersScrollingFrame:GetDescendants()) do
+					if v.Name == "TabSwitcher" then
+						Tween(v, TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
+							BackgroundTransparency = 1
+						}):Play()
+						Tween(v:FindFirstChild("TabSwitcherUIStroke"), TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
+							Transparency = 1
+						}):Play()
+					end
+				end
+
+				tabs[tabSwitcher].Parent = content
+				currentTabInstance = tabs[tabSwitcher]
+				currentTab.Text = Settings.Name
+
+				Tween(tabSwitcher, TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
+					BackgroundTransparency = 0.98
+				}):Play()
+				Tween(tabSwitcherUIStroke, TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
+					Transparency = 0.95
+				}):Play()
+			end
+
+			tabSwitcher.MouseButton1Click:Connect(function()
+				SelectCurrentTab()
+			end)
+
+			function SkinChangerFunctions:Select()
+				SelectCurrentTab()
+			end
+
+			tabs[tabSwitcher] = elements1
+			return SkinChangerFunctions
+		end
+
 		return SectionFunctions
 	end
 
