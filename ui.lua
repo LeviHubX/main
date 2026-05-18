@@ -5398,6 +5398,81 @@ function MacLib:Window(Settings)
 	macLib.Enabled = true
 	windowState = true
 
+	-- ===== MOBİL TOGGLE BUTONU (sadece touch ekranlarda görünür) =====
+	if UIS.TouchEnabled and not UIS.KeyboardEnabled then
+		local mobileBtn = Instance.new("TextButton")
+		mobileBtn.Name = "MobileToggleBtn"
+		mobileBtn.Size = UDim2.fromOffset(52, 52)
+		mobileBtn.Position = UDim2.new(0, 12, 0.5, -26)
+		mobileBtn.AnchorPoint = Vector2.new(0, 0)
+		mobileBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+		mobileBtn.BackgroundTransparency = 0.15
+		mobileBtn.BorderSizePixel = 0
+		mobileBtn.Text = "☰"
+		mobileBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		mobileBtn.TextSize = 26
+		mobileBtn.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
+		mobileBtn.AutoButtonColor = false
+		mobileBtn.ZIndex = 200
+
+		local mobileBtnCorner = Instance.new("UICorner")
+		mobileBtnCorner.CornerRadius = UDim.new(0, 14)
+		mobileBtnCorner.Parent = mobileBtn
+
+		local mobileBtnStroke = Instance.new("UIStroke")
+		mobileBtnStroke.Color = Color3.fromRGB(255, 255, 255)
+		mobileBtnStroke.Transparency = 0.75
+		mobileBtnStroke.Thickness = 1.5
+		mobileBtnStroke.Parent = mobileBtn
+
+		mobileBtn.Parent = macLib
+
+		-- Hover / tap animasyonu
+		mobileBtn.MouseEnter:Connect(function()
+			TweenService:Create(mobileBtn, TweenInfo.new(0.15), {BackgroundTransparency = 0}):Play()
+		end)
+		mobileBtn.MouseLeave:Connect(function()
+			TweenService:Create(mobileBtn, TweenInfo.new(0.15), {BackgroundTransparency = 0.15}):Play()
+		end)
+
+		-- İkon'u açık/kapalı duruma göre değiştir
+		local function updateMobileIcon()
+			mobileBtn.Text = windowState and "✕" or "☰"
+		end
+
+		mobileBtn.MouseButton1Click:Connect(function()
+			ToggleMenu()
+			updateMobileIcon()
+		end)
+
+		-- Sürükleme: butonu dikey eksen boyunca kaydırabilmek için
+		local dragging = false
+		local dragStartY = 0
+		local btnStartY = 0
+
+		mobileBtn.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.Touch then
+				dragging = true
+				dragStartY = input.Position.Y
+				btnStartY = mobileBtn.Position.Y.Scale
+			end
+		end)
+		mobileBtn.InputChanged:Connect(function(input)
+			if dragging and input.UserInputType == Enum.UserInputType.Touch then
+				local delta = input.Position.Y - dragStartY
+				local vpH = workspace.CurrentCamera.ViewportSize.Y
+				local newScale = math.clamp(btnStartY + (delta / vpH), 0.05, 0.9)
+				mobileBtn.Position = UDim2.new(0, 12, newScale, -26)
+			end
+		end)
+		mobileBtn.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.Touch then
+				dragging = false
+			end
+		end)
+	end
+	-- ===== END MOBİL TOGGLE BUTONU =====
+
 	return WindowFunctions
 end
 
