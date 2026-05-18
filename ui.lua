@@ -98,36 +98,60 @@ function MacLib:Window(Settings)
 	baseUIScale.Name = "BaseUIScale"
 	baseUIScale.Parent = base
 
+	local UIS = game:GetService("UserInputService")
+	local isMobile = UIS.TouchEnabled and not UIS.KeyboardEnabled
+
 	local function updateScale()
-		local viewportSize = workspace.CurrentCamera.ViewportSize
-		local sizeX = base.Size.X.Offset
-		local sizeY = base.Size.Y.Offset
-		if sizeX == 0 or sizeY == 0 then
-			sizeX = 868
-			sizeY = 650
+		local cam = workspace.CurrentCamera
+		if not cam then return end
+
+		local vp = cam.ViewportSize
+		-- Kamera henüz hazır değilse bir frame bekle
+		if vp.X == 0 or vp.Y == 0 then
+			task.defer(updateScale)
+			return
 		end
-		
-		local maxScaleX = (viewportSize.X - 20) / sizeX
-		local maxScaleY = (viewportSize.Y - 20) / sizeY
-		
-		local scale = math.min(1, maxScaleX, maxScaleY)
-		
-		local UserInputService = game:GetService("UserInputService")
-		-- Detect mobile/touch devices
-		if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
-			scale = scale * 0.85 -- Scale down a bit more for comfortable padding on mobile
+
+		local uiW = base.Size.X.Offset
+		local uiH = base.Size.Y.Offset
+		if uiW <= 0 then uiW = 868 end
+		if uiH <= 0 then uiH = 650 end
+
+		local padding = 20
+		local scaleX = (vp.X - padding) / uiW
+		local scaleY = (vp.Y - padding) / uiH
+		local scale = math.min(scaleX, scaleY)
+
+		if isMobile then
+			-- Mobilde ekranın %90'ı kadar kapla
+			scale = scale * 0.90
 		end
-		
-		-- Apply scale if it's necessary to fit the screen, or if it's a mobile device
-		if scale < 1 or (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled) then
-			baseUIScale.Scale = scale
-		else
-			baseUIScale.Scale = 1
+
+		-- 1'den büyük scale gereksiz, 0.2'den küçük çok küçük
+		scale = math.clamp(scale, 0.2, 1)
+		baseUIScale.Scale = scale
+	end
+
+	-- Kamera değiştiğinde (rotate/resize) yeniden hesapla
+	local function connectCamera()
+		local cam = workspace.CurrentCamera
+		if cam then
+			cam:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
 		end
 	end
 
-	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
-	task.spawn(updateScale)
+	workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+		connectCamera()
+		updateScale()
+	end)
+	connectCamera()
+
+	-- Yüklendikten sonra güvenli şekilde çalıştır
+	task.defer(function()
+		task.wait()
+		updateScale()
+	end)
+
 
 	local baseUICorner = Instance.new("UICorner")
 	baseUICorner.Name = "BaseUICorner"
