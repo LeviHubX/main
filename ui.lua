@@ -98,6 +98,37 @@ function MacLib:Window(Settings)
 	baseUIScale.Name = "BaseUIScale"
 	baseUIScale.Parent = base
 
+	local function updateScale()
+		local viewportSize = workspace.CurrentCamera.ViewportSize
+		local sizeX = base.Size.X.Offset
+		local sizeY = base.Size.Y.Offset
+		if sizeX == 0 or sizeY == 0 then
+			sizeX = 868
+			sizeY = 650
+		end
+		
+		local maxScaleX = (viewportSize.X - 20) / sizeX
+		local maxScaleY = (viewportSize.Y - 20) / sizeY
+		
+		local scale = math.min(1, maxScaleX, maxScaleY)
+		
+		local UserInputService = game:GetService("UserInputService")
+		-- Detect mobile/touch devices
+		if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+			scale = scale * 0.85 -- Scale down a bit more for comfortable padding on mobile
+		end
+		
+		-- Apply scale if it's necessary to fit the screen, or if it's a mobile device
+		if scale < 1 or (UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled) then
+			baseUIScale.Scale = scale
+		else
+			baseUIScale.Scale = 1
+		end
+	end
+
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScale)
+	task.spawn(updateScale)
+
 	local baseUICorner = Instance.new("UICorner")
 	baseUICorner.Name = "BaseUICorner"
 	baseUICorner.CornerRadius = UDim.new(0, 10)
@@ -1684,233 +1715,6 @@ function MacLib:Window(Settings)
 			right.Parent = elementsScrolling
 
 			elementsScrolling.Parent = elements1
-
-			-- ============================================================
-			-- TabFunctions:SkinGrid(Settings)
-			-- ============================================================
-			function TabFunctions:SkinGrid(Settings)
-				local SkinGridFunctions = {}
-				local swords = Settings.Swords or {}
-				local onApply = Settings.OnApply or function() end
-
-				-- Rarity color map (based on the image)
-				local rarityColors = {
-					Secret    = Color3.fromRGB(150, 100, 200),
-					Limited   = Color3.fromRGB(200, 50, 50),
-					Unique    = Color3.fromRGB(120, 120, 120),
-				}
-
-				-- Wipe default two-column layout; use full width instead
-				elementsScrolling.Visible = false
-
-				-- Outer wrapper
-				local skinGridWrapper = Instance.new("Frame")
-				skinGridWrapper.Name = "SkinGridWrapper"
-				skinGridWrapper.BackgroundTransparency = 1
-				skinGridWrapper.BorderSizePixel = 0
-				skinGridWrapper.Size = UDim2.fromScale(1, 1)
-				skinGridWrapper.Parent = elements1
-
-				-- Top bar
-				local topBar = Instance.new("Frame")
-				topBar.Name = "TopBar"
-				topBar.BackgroundColor3 = Color3.fromRGB(20, 15, 15) -- Slightly dark red tint
-				topBar.BackgroundTransparency = 0.5
-				topBar.BorderSizePixel = 0
-				topBar.Size = UDim2.new(1, 0, 0, 45)
-				topBar.Parent = skinGridWrapper
-				Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 6)
-
-				-- Search box
-				local searchBg = Instance.new("Frame")
-				searchBg.BackgroundColor3 = Color3.fromRGB(15, 10, 10)
-				searchBg.BackgroundTransparency = 0.5
-				searchBg.BorderSizePixel = 0
-				searchBg.AnchorPoint = Vector2.new(0.5, 0.5)
-				searchBg.Position = UDim2.fromScale(0.5, 0.5)
-				searchBg.Size = UDim2.new(0.6, 0, 0, 30)
-				searchBg.Parent = topBar
-				Instance.new("UICorner", searchBg).CornerRadius = UDim.new(0, 6)
-
-				local searchBox = Instance.new("TextBox")
-				searchBox.BackgroundTransparency = 1
-				searchBox.PlaceholderText = "Search sword..."
-				searchBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 140)
-				searchBox.Text = ""
-				searchBox.TextColor3 = Color3.fromRGB(240, 240, 240)
-				searchBox.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium)
-				searchBox.TextSize = 14
-				searchBox.Size = UDim2.fromScale(1, 1)
-				searchBox.Parent = searchBg
-				
-				local sbPad = Instance.new("UIPadding")
-				sbPad.PaddingLeft = UDim.new(0, 10)
-				sbPad.Parent = searchBox
-
-				-- Count badge
-				local countBadge = Instance.new("TextLabel")
-				countBadge.Name = "CountBadge"
-				countBadge.BackgroundTransparency = 1
-				countBadge.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium)
-				countBadge.Text = tostring(#swords) .. " swords"
-				countBadge.TextColor3 = Color3.fromRGB(180, 180, 180)
-				countBadge.TextSize = 13
-				countBadge.AnchorPoint = Vector2.new(1, 0.5)
-				countBadge.Position = UDim2.new(1, -15, 0.5, 0)
-				countBadge.Size = UDim2.fromOffset(100, 26)
-				countBadge.TextXAlignment = Enum.TextXAlignment.Right
-				countBadge.Parent = topBar
-
-				-- Grid scroll
-				local gridScroll = Instance.new("ScrollingFrame")
-				gridScroll.Name = "SkinGridScroll"
-				gridScroll.BackgroundTransparency = 1
-				gridScroll.BorderSizePixel = 0
-				gridScroll.Position = UDim2.fromOffset(0, 55)
-				gridScroll.Size = UDim2.new(1, 0, 1, -55)
-				gridScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-				gridScroll.CanvasSize = UDim2.new()
-				gridScroll.ScrollBarThickness = 2
-				gridScroll.ScrollBarImageColor3 = Color3.fromRGB(120, 120, 120)
-				gridScroll.Parent = skinGridWrapper
-
-				local gridLayout = Instance.new("UIGridLayout")
-				gridLayout.CellSize = UDim2.fromOffset(115, 175)
-				gridLayout.CellPadding = UDim2.fromOffset(12, 12)
-				gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
-				gridLayout.Parent = gridScroll
-
-				local gridPad = Instance.new("UIPadding")
-				gridPad.PaddingLeft  = UDim.new(0, 10)
-				gridPad.PaddingRight = UDim.new(0, 10)
-				gridPad.PaddingTop   = UDim.new(0, 10)
-				gridPad.Parent = gridScroll
-
-				-- Card builder
-				local cardPool = {}
-
-				local function buildCard(sword)
-					local rarityColor = rarityColors[sword.Rarity] or rarityColors.Unique
-
-					local card = Instance.new("Frame")
-					card.Name = sword.Name
-					card.BackgroundColor3 = Color3.fromRGB(20, 15, 15) -- Very dark red tint
-					card.BackgroundTransparency = 0.2
-					card.BorderSizePixel = 0
-					Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-					
-					local stroke = Instance.new("UIStroke")
-					stroke.Color = Color3.fromRGB(50, 30, 30)
-					stroke.Transparency = 0
-					stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-					stroke.Parent = card
-					
-					-- Sword image
-					local img = Instance.new("ImageLabel")
-					img.BackgroundTransparency = 1
-					img.AnchorPoint = Vector2.new(0.5, 0)
-					img.Position = UDim2.fromOffset(57, 10)
-					img.Size = UDim2.fromOffset(90, 90)
-					img.Image = sword.Image or ""
-					img.ScaleType = Enum.ScaleType.Fit
-					img.Parent = card
-
-					-- Sword name
-					local nameLabel = Instance.new("TextLabel")
-					nameLabel.BackgroundTransparency = 1
-					nameLabel.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold)
-					nameLabel.Text = sword.Name
-					nameLabel.TextColor3 = Color3.fromRGB(220, 40, 40) -- Red text like image
-					nameLabel.TextSize = 12
-					nameLabel.TextWrapped = true
-					nameLabel.AnchorPoint = Vector2.new(0.5, 0)
-					nameLabel.Position = UDim2.fromOffset(57, 108)
-					nameLabel.Size = UDim2.new(1, -10, 0, 16)
-					nameLabel.Parent = card
-
-					-- Rarity label
-					local rarityLabel = Instance.new("TextLabel")
-					rarityLabel.BackgroundTransparency = 1
-					rarityLabel.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium)
-					rarityLabel.Text = sword.Rarity or "Unique"
-					rarityLabel.TextColor3 = rarityColor
-					rarityLabel.TextSize = 11
-					rarityLabel.AnchorPoint = Vector2.new(0.5, 0)
-					rarityLabel.Position = UDim2.fromOffset(57, 126)
-					rarityLabel.Size = UDim2.new(1, -10, 0, 14)
-					rarityLabel.Parent = card
-
-					-- Apply button
-					local applyBtn = Instance.new("TextButton")
-					applyBtn.BackgroundColor3 = Color3.fromRGB(70, 130, 70)
-					applyBtn.BackgroundTransparency = 0.1
-					applyBtn.FontFace = Font.new(assets.interFont, Enum.FontWeight.Bold)
-					applyBtn.Text = "Apply"
-					applyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-					applyBtn.TextSize = 13
-					applyBtn.AutoButtonColor = false
-					applyBtn.AnchorPoint = Vector2.new(0.5, 0)
-					applyBtn.Position = UDim2.fromOffset(57, 154)
-					applyBtn.Size = UDim2.new(1, -20, 0, 24)
-					Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0, 6)
-					applyBtn.Parent = card
-					
-					-- Hover Effects for Apply Button
-					applyBtn.MouseEnter:Connect(function()
-						Tween(applyBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(90, 160, 90) }):Play()
-					end)
-					applyBtn.MouseLeave:Connect(function()
-						Tween(applyBtn, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(70, 130, 70) }):Play()
-					end)
-					
-					-- Hover Effects for Card
-					card.MouseEnter:Connect(function()
-						Tween(stroke, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { Color = Color3.fromRGB(120, 50, 50) }):Play()
-						Tween(card, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(30, 20, 20) }):Play()
-					end)
-					card.MouseLeave:Connect(function()
-						Tween(stroke, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { Color = Color3.fromRGB(50, 30, 30) }):Play()
-						Tween(card, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(20, 15, 15) }):Play()
-					end)
-					
-					applyBtn.MouseButton1Click:Connect(function()
-						onApply(sword.Name)
-					end)
-
-					card.Parent = gridScroll
-					table.insert(cardPool, { card = card, sword = sword })
-				end
-
-				for _, sword in ipairs(swords) do
-					buildCard(sword)
-				end
-
-				-- Search filter
-				searchBox:GetPropertyChangedSignal("Text"):Connect(function()
-					local query = searchBox.Text:lower()
-					local visible = 0
-					for _, entry in ipairs(cardPool) do
-						local show = query == "" or entry.sword.Name:lower():find(query, 1, true)
-						entry.card.Visible = show ~= nil and show ~= false
-						if entry.card.Visible then visible = visible + 1 end
-					end
-					countBadge.Text = tostring(visible) .. " swords"
-				end)
-
-				function SkinGridFunctions:AddSword(sword)
-					buildCard(sword)
-					countBadge.Text = tostring(#cardPool) .. " swords"
-				end
-
-				function SkinGridFunctions:SetSwords(newSwords)
-					for _, entry in ipairs(cardPool) do entry.card:Destroy() end
-					cardPool = {}
-					for _, sword in ipairs(newSwords) do buildCard(sword) end
-					countBadge.Text = tostring(#cardPool) .. " swords"
-				end
-
-				return SkinGridFunctions
-			end
 
 			function TabFunctions:Section(Settings)
 				local SectionFunctions = {}
