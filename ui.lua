@@ -834,17 +834,31 @@ function MacLib:Window(Settings)
 
 	content.Parent = base
 
+	local searchCanvas = Instance.new("CanvasGroup")
+	searchCanvas.Name = "SearchCanvas"
+	searchCanvas.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	searchCanvas.BackgroundTransparency = 1
+	searchCanvas.BorderColor3 = Color3.fromRGB(0, 0, 0)
+	searchCanvas.BorderSizePixel = 0
+	searchCanvas.Size = UDim2.fromScale(1, 1)
+	searchCanvas.GroupTransparency = 1
+	searchCanvas.ZIndex = 10
+	searchCanvas.Visible = false
+	searchCanvas.Parent = base
+
 	local searchFrame = Instance.new("Frame")
 	searchFrame.Name = "GlobalSearch"
 	searchFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 	searchFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	searchFrame.BorderSizePixel = 0
-	searchFrame.Position = UDim2.fromScale(0.5, 0.1)
-	searchFrame.AnchorPoint = Vector2.new(0.5, 0)
-	searchFrame.Size = UDim2.fromOffset(300, 300)
-	searchFrame.Visible = false
-	searchFrame.ZIndex = 10
-	searchFrame.Parent = base
+	searchFrame.Position = UDim2.fromScale(0.5, 0.4)
+	searchFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+	searchFrame.Size = UDim2.fromOffset(350, 400)
+	searchFrame.Parent = searchCanvas
+
+	local searchScale = Instance.new("UIScale")
+	searchScale.Scale = 0.8
+	searchScale.Parent = searchFrame
 
 	local searchFrameUICorner = Instance.new("UICorner")
 	searchFrameUICorner.CornerRadius = UDim.new(0, 10)
@@ -853,18 +867,18 @@ function MacLib:Window(Settings)
 	local searchFrameUIStroke = Instance.new("UIStroke")
 	searchFrameUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	searchFrameUIStroke.Color = Color3.fromRGB(255, 255, 255)
-	searchFrameUIStroke.Transparency = 0.9
+	searchFrameUIStroke.Transparency = 0.85
 	searchFrameUIStroke.Parent = searchFrame
 
 	local searchBoxWrapper = Instance.new("Frame")
 	searchBoxWrapper.Name = "SearchBoxWrapper"
 	searchBoxWrapper.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-	searchBoxWrapper.Size = UDim2.new(1, -20, 0, 30)
+	searchBoxWrapper.Size = UDim2.new(1, -20, 0, 36)
 	searchBoxWrapper.Position = UDim2.fromOffset(10, 10)
 	searchBoxWrapper.Parent = searchFrame
 
 	local searchBoxWrapperUICorner = Instance.new("UICorner")
-	searchBoxWrapperUICorner.CornerRadius = UDim.new(0, 5)
+	searchBoxWrapperUICorner.CornerRadius = UDim.new(0, 6)
 	searchBoxWrapperUICorner.Parent = searchBoxWrapper
 
 	local globalSearchBox = Instance.new("TextBox")
@@ -887,21 +901,38 @@ function MacLib:Window(Settings)
 	searchResultsScroll.Name = "SearchResults"
 	searchResultsScroll.BackgroundTransparency = 1
 	searchResultsScroll.BorderSizePixel = 0
-	searchResultsScroll.Position = UDim2.fromOffset(10, 50)
-	searchResultsScroll.Size = UDim2.new(1, -20, 1, -60)
+	searchResultsScroll.Position = UDim2.fromOffset(10, 56)
+	searchResultsScroll.Size = UDim2.new(1, -20, 1, -66)
 	searchResultsScroll.ScrollBarThickness = 2
+	searchResultsScroll.ScrollBarImageColor3 = Color3.fromRGB(150, 150, 150)
 	searchResultsScroll.Parent = searchFrame
 	
 	local searchResultsLayout = Instance.new("UIListLayout")
-	searchResultsLayout.Padding = UDim.new(0, 5)
+	searchResultsLayout.Padding = UDim.new(0, 6)
 	searchResultsLayout.Parent = searchResultsScroll
 
-	searchInteract.MouseButton1Click:Connect(function()
-		searchFrame.Visible = not searchFrame.Visible
-		if searchFrame.Visible then
+	local function toggleSearch(forceState)
+		local isVisible = forceState ~= nil and forceState or not searchCanvas.Visible
+		if isVisible then
+			searchCanvas.Visible = true
+			Tween(searchCanvas, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { GroupTransparency = 0 }):Play()
+			Tween(searchScale, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
 			globalSearchBox:CaptureFocus()
 			globalSearchBox.Text = ""
+		else
+			local outTween = Tween(searchCanvas, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.In), { GroupTransparency = 1 })
+			Tween(searchScale, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.In), { Scale = 0.8 }):Play()
+			outTween:Play()
+			outTween.Completed:Once(function()
+				if searchCanvas.GroupTransparency == 1 then
+					searchCanvas.Visible = false
+				end
+			end)
 		end
+	end
+
+	searchInteract.MouseButton1Click:Connect(function()
+		toggleSearch()
 	end)
 
 	local function updateSearchResults()
@@ -914,20 +945,35 @@ function MacLib:Window(Settings)
 			if query == "" or item.Name:lower():find(query) then
 				count = count + 1
 				local btn = Instance.new("TextButton")
-				btn.Size = UDim2.new(1, -10, 0, 30)
-				btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-				btn.Text = item.Name .. " (" .. item.Type .. ")"
-				btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				btn.Size = UDim2.new(1, -10, 0, 35)
+				btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+				btn.Text = "  " .. item.Name .. " (" .. item.Type .. ")"
+				btn.TextColor3 = Color3.fromRGB(200, 200, 200)
 				btn.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium)
 				btn.TextSize = 13
+				btn.TextXAlignment = Enum.TextXAlignment.Left
 				btn.AutoButtonColor = false
 				local corner = Instance.new("UICorner")
-				corner.CornerRadius = UDim.new(0, 5)
+				corner.CornerRadius = UDim.new(0, 6)
 				corner.Parent = btn
+				local stroke = Instance.new("UIStroke")
+				stroke.Color = Color3.fromRGB(255, 255, 255)
+				stroke.Transparency = 0.95
+				stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+				stroke.Parent = btn
 				btn.Parent = searchResultsScroll
 
+				btn.MouseEnter:Connect(function()
+					Tween(btn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(35, 35, 35), TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+					Tween(stroke, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { Transparency = 0.8 }):Play()
+				end)
+				btn.MouseLeave:Connect(function()
+					Tween(btn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(20, 20, 20), TextColor3 = Color3.fromRGB(200, 200, 200) }):Play()
+					Tween(stroke, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { Transparency = 0.95 }):Play()
+				end)
+
 				btn.MouseButton1Click:Connect(function()
-					searchFrame.Visible = false
+					toggleSearch(false)
 					if item.TabSelect then item.TabSelect() end
 					if item.ScrollTarget and item.ScrollingFrame then
 						item.ScrollingFrame.CanvasPosition = Vector2.new(0, math.max(0, item.ScrollTarget.AbsolutePosition.Y - item.ScrollingFrame.AbsolutePosition.Y + item.ScrollingFrame.CanvasPosition.Y - 10))
@@ -935,7 +981,7 @@ function MacLib:Window(Settings)
 				end)
 			end
 		end
-		searchResultsScroll.CanvasSize = UDim2.new(0, 0, 0, count * 35)
+		searchResultsScroll.CanvasSize = UDim2.new(0, 0, 0, count * 41)
 	end
 	globalSearchBox:GetPropertyChangedSignal("Text"):Connect(updateSearchResults)
 
