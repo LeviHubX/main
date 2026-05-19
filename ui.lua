@@ -700,261 +700,51 @@ function MacLib:Window(Settings)
 
 	local uIPadding2 = Instance.new("UIPadding")
 	uIPadding2.Name = "UIPadding"
-	uIPadding2.PaddingLeft = UDim.new(0, 16)
-	uIPadding2.PaddingRight = UDim.new(0, 16)
-	uIPadding2.PaddingTop = UDim.new(0, 0)
-	uIPadding2.PaddingBottom = UDim.new(0, 0)
+	uIPadding2.PaddingLeft = UDim.new(0, 20)
+	uIPadding2.PaddingRight = UDim.new(0, 20)
 	uIPadding2.Parent = elements
 
-	-- Sol: İkon + Başlık grubu
-	local topbarLeft = Instance.new("Frame")
-	topbarLeft.Name = "TopbarLeft"
-	topbarLeft.AnchorPoint = Vector2.new(0, 0.5)
-	topbarLeft.BackgroundTransparency = 1
-	topbarLeft.BorderSizePixel = 0
-	topbarLeft.Position = UDim2.new(0, 0, 0.5, 0)
-	topbarLeft.Size = UDim2.new(0.22, 0, 0, 36)
-	topbarLeft.Parent = elements
-
-	local topbarLeftLayout = Instance.new("UIListLayout")
-	topbarLeftLayout.FillDirection = Enum.FillDirection.Horizontal
-	topbarLeftLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-	topbarLeftLayout.Padding = UDim.new(0, 8)
-	topbarLeftLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	topbarLeftLayout.Parent = topbarLeft
-
-	local topbarIcon = Instance.new("ImageLabel")
-	topbarIcon.Name = "TopbarIcon"
-	topbarIcon.Image = Settings.Image or "rbxassetid://18767849817"
-	topbarIcon.BackgroundTransparency = 1
-	topbarIcon.BorderSizePixel = 0
-	topbarIcon.Size = UDim2.fromOffset(22, 22)
-	topbarIcon.ImageColor3 = Color3.fromRGB(160, 100, 255)
-	topbarIcon.LayoutOrder = 0
-	topbarIcon.Parent = topbarLeft
-
-	local topbarTitle = Instance.new("TextLabel")
-	topbarTitle.Name = "TopbarTitle"
-	topbarTitle.FontFace = Font.new(assets.interFont, Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-	topbarTitle.Text = Settings.Title or "Hub"
-	topbarTitle.RichText = true
-	topbarTitle.TextColor3 = Color3.fromRGB(200, 160, 255)
-	topbarTitle.TextSize = 16
-	topbarTitle.TextTransparency = 0
-	topbarTitle.TextXAlignment = Enum.TextXAlignment.Left
-	topbarTitle.BackgroundTransparency = 1
-	topbarTitle.BorderSizePixel = 0
-	topbarTitle.AutomaticSize = Enum.AutomaticSize.XY
-	topbarTitle.Size = UDim2.fromOffset(0, 0)
-	topbarTitle.LayoutOrder = 1
-	topbarTitle.Parent = topbarLeft
-
-	-- Orta: Inline arama kutusu
-	local topbarSearchWrapper = Instance.new("Frame")
-	topbarSearchWrapper.Name = "TopbarSearchWrapper"
-	topbarSearchWrapper.AnchorPoint = Vector2.new(0.5, 0.5)
-	topbarSearchWrapper.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
-	topbarSearchWrapper.BackgroundTransparency = 0
-	topbarSearchWrapper.BorderSizePixel = 0
-	topbarSearchWrapper.Position = UDim2.new(0.5, 0, 0.5, 0)
-	topbarSearchWrapper.Size = UDim2.new(0.38, 0, 0, 34)
-	topbarSearchWrapper.Parent = elements
-
-	local topbarSearchWrapperUICorner = Instance.new("UICorner")
-	topbarSearchWrapperUICorner.CornerRadius = UDim.new(1, 0)
-	topbarSearchWrapperUICorner.Parent = topbarSearchWrapper
-
-	local topbarSearchWrapperUIStroke = Instance.new("UIStroke")
-	topbarSearchWrapperUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	topbarSearchWrapperUIStroke.Color = Color3.fromRGB(255, 255, 255)
-	topbarSearchWrapperUIStroke.Transparency = 0.92
-	topbarSearchWrapperUIStroke.Parent = topbarSearchWrapper
-
-	local topbarSearchInnerLayout = Instance.new("UIListLayout")
-	topbarSearchInnerLayout.FillDirection = Enum.FillDirection.Horizontal
-	topbarSearchInnerLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-	topbarSearchInnerLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	topbarSearchInnerLayout.Padding = UDim.new(0, 6)
-	topbarSearchInnerLayout.Parent = topbarSearchWrapper
-
-	local topbarSearchInnerPad = Instance.new("UIPadding")
-	topbarSearchInnerPad.PaddingLeft = UDim.new(0, 14)
-	topbarSearchInnerPad.PaddingRight = UDim.new(0, 10)
-	topbarSearchInnerPad.Parent = topbarSearchWrapper
-
-	local topbarSearchIcon = Instance.new("ImageLabel")
-	topbarSearchIcon.Name = "TopbarSearchIcon"
-	topbarSearchIcon.Image = assets.searchIcon
-	topbarSearchIcon.BackgroundTransparency = 1
-	topbarSearchIcon.BorderSizePixel = 0
-	topbarSearchIcon.Size = UDim2.fromOffset(14, 14)
-	topbarSearchIcon.ImageColor3 = Color3.fromRGB(160, 160, 180)
-	topbarSearchIcon.LayoutOrder = 0
-	topbarSearchIcon.Parent = topbarSearchWrapper
-
-	local topbarSearchBox = Instance.new("TextBox")
-	topbarSearchBox.Name = "TopbarSearchBox"
-	topbarSearchBox.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
-	topbarSearchBox.PlaceholderText = "Search Functions..."
-	topbarSearchBox.PlaceholderColor3 = Color3.fromRGB(110, 110, 130)
-	topbarSearchBox.Text = ""
-	topbarSearchBox.TextColor3 = Color3.fromRGB(220, 220, 240)
-	topbarSearchBox.TextSize = 13
-	topbarSearchBox.BackgroundTransparency = 1
-	topbarSearchBox.BorderSizePixel = 0
-	topbarSearchBox.TextXAlignment = Enum.TextXAlignment.Left
-	topbarSearchBox.ClearTextOnFocus = false
-	topbarSearchBox.LayoutOrder = 1
-	topbarSearchBox.Size = UDim2.new(1, -30, 1, 0)
-	topbarSearchBox.Parent = topbarSearchWrapper
-
-	-- Topbar search focus animasyonu
-	topbarSearchBox:GetPropertyChangedSignal("Text"):Connect(function()
-		if WindowFunctions.SearchableElements then
-			for _, child in pairs(searchResultsScroll and searchResultsScroll:GetChildren() or {}) do
-				if child:IsA("TextButton") then child:Destroy() end
-			end
-			local query = topbarSearchBox.Text:lower()
-			local count = 0
-			for _, item in pairs(WindowFunctions.SearchableElements) do
-				if query == "" or item.Name:lower():find(query) then
-					count = count + 1
-					local btn = Instance.new("TextButton")
-					btn.Size = UDim2.new(1, -10, 0, 35)
-					btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-					btn.Text = "  " .. item.Name .. " (" .. item.Type .. ")"
-					btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-					btn.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium)
-					btn.TextSize = 13
-					btn.TextXAlignment = Enum.TextXAlignment.Left
-					btn.AutoButtonColor = false
-					local corner = Instance.new("UICorner")
-					corner.CornerRadius = UDim.new(0, 6)
-					corner.Parent = btn
-					if searchResultsScroll then
-						btn.Parent = searchResultsScroll
-						btn.MouseButton1Click:Connect(function()
-							topbarSearchBox.Text = ""
-							if item.TabSelect then item.TabSelect() end
-							if item.ScrollTarget and item.ScrollingFrame then
-								item.ScrollingFrame.CanvasPosition = Vector2.new(0, math.max(0, item.ScrollTarget.AbsolutePosition.Y - item.ScrollingFrame.AbsolutePosition.Y + item.ScrollingFrame.CanvasPosition.Y - 10))
-							end
-						end)
-					end
-				end
-			end
-		end
-	end)
-
-	topbarSearchBox.Focused:Connect(function()
-		Tween(topbarSearchWrapperUIStroke, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { Transparency = 0.6 }):Play()
-		Tween(topbarSearchWrapper, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(28, 28, 36) }):Play()
-	end)
-	topbarSearchBox.FocusLost:Connect(function()
-		Tween(topbarSearchWrapperUIStroke, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { Transparency = 0.92 }):Play()
-		Tween(topbarSearchWrapper, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { BackgroundColor3 = Color3.fromRGB(22, 22, 28) }):Play()
-	end)
-
-	-- Sağ: FPS | Ping göstergesi
-	local topbarRight = Instance.new("Frame")
-	topbarRight.Name = "TopbarRight"
-	topbarRight.AnchorPoint = Vector2.new(1, 0.5)
-	topbarRight.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
-	topbarRight.BackgroundTransparency = 0
-	topbarRight.BorderSizePixel = 0
-	topbarRight.Position = UDim2.new(1, 0, 0.5, 0)
-	topbarRight.Size = UDim2.new(0, 160, 0, 30)
-	topbarRight.Parent = elements
-
-	local topbarRightUICorner = Instance.new("UICorner")
-	topbarRightUICorner.CornerRadius = UDim.new(0, 8)
-	topbarRightUICorner.Parent = topbarRight
-
-	local topbarRightUIStroke = Instance.new("UIStroke")
-	topbarRightUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	topbarRightUIStroke.Color = Color3.fromRGB(255, 255, 255)
-	topbarRightUIStroke.Transparency = 0.92
-	topbarRightUIStroke.Parent = topbarRight
-
-	local fpsLabel = Instance.new("TextLabel")
-	fpsLabel.Name = "FpsLabel"
-	fpsLabel.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-	fpsLabel.Text = "FPS: -- | Ping: --"
-	fpsLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-	fpsLabel.TextSize = 12
-	fpsLabel.BackgroundTransparency = 1
-	fpsLabel.BorderSizePixel = 0
-	fpsLabel.Size = UDim2.fromScale(1, 1)
-	fpsLabel.Parent = topbarRight
-
-	-- FPS & Ping güncelleme
-	do
-		local fpsHistory = {}
-		local lastPingUpdate = 0
-		local currentPing = 0
-
-		local statsConn
-		statsConn = RunService.RenderStepped:Connect(function(dt)
-			table.insert(fpsHistory, 1 / dt)
-			if #fpsHistory > 20 then table.remove(fpsHistory) end
-			local sum = 0
-			for _, v in ipairs(fpsHistory) do sum = sum + v end
-			local avgFps = math.round(sum / #fpsHistory)
-
-			local now = tick()
-			if now - lastPingUpdate >= 2 then
-				lastPingUpdate = now
-				local ok, ping = pcall(function()
-					return LocalPlayer:GetNetworkPing and math.round(LocalPlayer:GetNetworkPing() * 1000) or 0
-				end)
-				currentPing = ok and ping or 0
-			end
-
-			local fpsColor = avgFps >= 55 and "255, 255, 255" or avgFps >= 30 and "255, 200, 80" or "255, 80, 80"
-			local pingColor = currentPing <= 80 and "255, 255, 255" or currentPing <= 150 and "255, 200, 80" or "255, 80, 80"
-
-			fpsLabel.Text = string.format(
-				'<font color="rgb(%s)">FPS: %d</font>  |  <font color="rgb(%s)">Ping: %d ms</font>',
-				fpsColor, avgFps, pingColor, currentPing
-			)
-			fpsLabel.RichText = true
-		end)
-	end
-
-	-- Drag: moveIcon şimdi invisible, topbar'ın kendisi drag alanı
 	local moveIcon = Instance.new("ImageButton")
 	moveIcon.Name = "MoveIcon"
-	moveIcon.Image = ""
+	moveIcon.Image = "rbxassetid://10734900011"
+	moveIcon.ImageTransparency = 0.5
+	moveIcon.AnchorPoint = Vector2.new(1, 0.5)
+	moveIcon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	moveIcon.BackgroundTransparency = 1
+	moveIcon.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	moveIcon.BorderSizePixel = 0
-	moveIcon.Position = UDim2.fromScale(0, 0)
-	moveIcon.Size = UDim2.fromOffset(0, 0)
-	moveIcon.Visible = false
+	moveIcon.Position = UDim2.fromScale(1, 0.5)
+	moveIcon.Size = UDim2.fromOffset(15, 15)
 	moveIcon.Parent = elements
+	moveIcon.Visible = not Settings.DragStyle or Settings.DragStyle == 1
 
 	local searchIconBtn = Instance.new("ImageButton")
 	searchIconBtn.Name = "SearchIconBtn"
-	searchIconBtn.Image = ""
+	searchIconBtn.Image = assets.searchIcon
+	searchIconBtn.ImageTransparency = 0.5
+	searchIconBtn.AnchorPoint = Vector2.new(1, 0.5)
+	searchIconBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	searchIconBtn.BackgroundTransparency = 1
+	searchIconBtn.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	searchIconBtn.BorderSizePixel = 0
-	searchIconBtn.Visible = false
+	searchIconBtn.Position = UDim2.new(1, -30, 0.5, 0)
+	searchIconBtn.Size = UDim2.fromOffset(15, 15)
 	searchIconBtn.Parent = elements
-
+	
 	local interact = Instance.new("TextButton")
 	interact.Name = "Interact"
 	interact.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
 	interact.Text = ""
 	interact.TextColor3 = Color3.fromRGB(0, 0, 0)
 	interact.TextSize = 14
-	interact.AnchorPoint = Vector2.new(0, 0)
+	interact.AnchorPoint = Vector2.new(0.5, 0.5)
 	interact.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	interact.BackgroundTransparency = 1
 	interact.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	interact.BorderSizePixel = 0
-	interact.Position = UDim2.fromScale(0, 0)
-	interact.Size = UDim2.fromScale(1, 1)
-	interact.ZIndex = 0
-	interact.Parent = elements
+	interact.Position = UDim2.fromScale(0.5, 0.5)
+	interact.Size = UDim2.fromOffset(30, 30)
+	interact.Parent = moveIcon
 
 	local searchInteract = Instance.new("TextButton")
 	searchInteract.Name = "Interact"
@@ -966,13 +756,34 @@ function MacLib:Window(Settings)
 	searchInteract.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	searchInteract.BorderSizePixel = 0
 	searchInteract.Position = UDim2.fromScale(0.5, 0.5)
-	searchInteract.Size = UDim2.fromOffset(0, 0)
-	searchInteract.Visible = false
+	searchInteract.Size = UDim2.fromOffset(30, 30)
 	searchInteract.Parent = searchIconBtn
 
 	local function ChangemoveIconState(State)
-		-- Artık moveIcon görünmez, bu fonksiyon boş bırakılıyor
+		if State == "Default" then
+			Tween(moveIcon, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {
+				ImageTransparency = 0.5
+			}):Play()
+		elseif State == "Hover" then
+			Tween(moveIcon, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {
+				ImageTransparency = 0.2
+			}):Play()
+		end
 	end
+
+	interact.MouseEnter:Connect(function()
+		ChangemoveIconState("Hover")
+	end)
+	interact.MouseLeave:Connect(function()
+		ChangemoveIconState("Default")
+	end)
+
+	searchInteract.MouseEnter:Connect(function()
+		Tween(searchIconBtn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 0.2 }):Play()
+	end)
+	searchInteract.MouseLeave:Connect(function()
+		Tween(searchIconBtn, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 0.5 }):Play()
+	end)
 
 	local dragging_ = false
 	local dragInput
@@ -1054,14 +865,22 @@ function MacLib:Window(Settings)
 		Enum.FontStyle.Normal
 	)
 	currentTab.RichText = true
-	currentTab.Text = ""
+	currentTab.Text = "Tab"
+	currentTab.RichText = true
 	currentTab.TextColor3 = Color3.fromRGB(255, 255, 255)
 	currentTab.TextSize = 15
-	currentTab.TextTransparency = 1
+	currentTab.TextTransparency = 0.5
+	currentTab.TextTruncate = Enum.TextTruncate.SplitWord
+	currentTab.TextXAlignment = Enum.TextXAlignment.Left
+	currentTab.TextYAlignment = Enum.TextYAlignment.Top
+	currentTab.AnchorPoint = Vector2.new(0, 0.5)
+	currentTab.AutomaticSize = Enum.AutomaticSize.Y
+	currentTab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	currentTab.BackgroundTransparency = 1
+	currentTab.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	currentTab.BorderSizePixel = 0
-	currentTab.Visible = false
-	currentTab.Size = UDim2.fromOffset(0, 0)
+	currentTab.Position = UDim2.fromScale(0, 0.5)
+	currentTab.Size = UDim2.fromScale(0.9, 0)
 	currentTab.Parent = elements
 
 	elements.Parent = topbar
