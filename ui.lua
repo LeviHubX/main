@@ -1790,6 +1790,10 @@ function MacLib:Window(Settings)
 					button.Size = UDim2.new(1, 0, 0, 38)
 					button.Parent = section
 
+					local buttonPressScale = Instance.new("UIScale")
+					buttonPressScale.Scale = 1
+					buttonPressScale.Parent = button
+
 					local buttonInteract = Instance.new("TextButton")
 					buttonInteract.Name = "ButtonInteract"
 					buttonInteract.FontFace = Font.new(
@@ -1863,6 +1867,18 @@ function MacLib:Window(Settings)
 					end)
 
 					buttonInteract.MouseButton1Click:Connect(Callback)
+
+					-- Basma animasyonu
+					buttonInteract.InputBegan:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+							Tween(buttonPressScale, TweenInfo.new(0.1, Enum.EasingStyle.Sine), { Scale = 0.95 }):Play()
+						end
+					end)
+					buttonInteract.InputEnded:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+							Tween(buttonPressScale, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+						end
+					end)
 					
 					table.insert(WindowFunctions.SearchableElements, {
 						Name = Settings.Name,
@@ -2007,6 +2023,18 @@ function MacLib:Window(Settings)
 					end
 
 					toggle1.MouseButton1Click:Connect(Toggle)
+
+					-- Toggle basma animasyonu
+					toggle1.InputBegan:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+							Tween(toggle1, TweenInfo.new(0.1, Enum.EasingStyle.Sine), { Size = UDim2.fromOffset(37, 19) }):Play()
+						end
+					end)
+					toggle1.InputEnded:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+							Tween(toggle1, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(41, 21) }):Play()
+						end
+					end)
 
 					table.insert(WindowFunctions.SearchableElements, {
 						Name = Settings.Name,
@@ -5305,6 +5333,11 @@ function MacLib:Window(Settings)
 				end
 			end
 			
+			-- Dialog buton press scale
+			local dialogBtnScale = Instance.new("UIScale")
+			dialogBtnScale.Scale = 1
+			dialogBtnScale.Parent = button
+
 			button.MouseButton1Click:Connect(function()
 				if dialogCanvas.GroupTransparency ~= 0 then return end
 				if v.Callback then
@@ -5321,6 +5354,18 @@ function MacLib:Window(Settings)
 			end)
 			button.MouseLeave:Connect(function()
 				ChangeState("Idle")
+			end)
+
+			-- Dialog buton basma animasyonu
+			button.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					Tween(dialogBtnScale, TweenInfo.new(0.1, Enum.EasingStyle.Sine), { Scale = 0.94 }):Play()
+				end
+			end)
+			button.InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					Tween(dialogBtnScale, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
+				end
 			end)
 		end
 		
@@ -5411,6 +5456,23 @@ function MacLib:Window(Settings)
 	exit.MouseButton1Click:Connect(function()
 		WindowFunctions:Unload()
 	end)
+
+	-- Pencere kontrol tuşları basma animasyonları
+	local function addDotPressAnim(btn)
+		if not btn.Active then return end
+		btn.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				Tween(btn, TweenInfo.new(0.08, Enum.EasingStyle.Sine), { Size = UDim2.fromOffset(6, 6) }):Play()
+			end
+		end)
+		btn.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				Tween(btn, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(8, 8) }):Play()
+			end
+		end)
+	end
+	addDotPressAnim(exit)
+	addDotPressAnim(minimize)
 
 	function WindowFunctions:SetKeybind(Keycode)
 		MenuKeybind = Keycode
