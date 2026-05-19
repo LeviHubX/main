@@ -1790,10 +1790,6 @@ function MacLib:Window(Settings)
 					button.Size = UDim2.new(1, 0, 0, 38)
 					button.Parent = section
 
-					local buttonPressScale = Instance.new("UIScale")
-					buttonPressScale.Scale = 1
-					buttonPressScale.Parent = button
-
 					local buttonInteract = Instance.new("TextButton")
 					buttonInteract.Name = "ButtonInteract"
 					buttonInteract.FontFace = Font.new(
@@ -1867,18 +1863,6 @@ function MacLib:Window(Settings)
 					end)
 
 					buttonInteract.MouseButton1Click:Connect(Callback)
-
-					-- Basma animasyonu
-					buttonInteract.InputBegan:Connect(function(input)
-						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-							Tween(buttonPressScale, TweenInfo.new(0.1, Enum.EasingStyle.Sine), { Scale = 0.95 }):Play()
-						end
-					end)
-					buttonInteract.InputEnded:Connect(function(input)
-						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-							Tween(buttonPressScale, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-						end
-					end)
 					
 					table.insert(WindowFunctions.SearchableElements, {
 						Name = Settings.Name,
@@ -2023,18 +2007,6 @@ function MacLib:Window(Settings)
 					end
 
 					toggle1.MouseButton1Click:Connect(Toggle)
-
-					-- Toggle basma animasyonu
-					toggle1.InputBegan:Connect(function(input)
-						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-							Tween(toggle1, TweenInfo.new(0.1, Enum.EasingStyle.Sine), { Size = UDim2.fromOffset(37, 19) }):Play()
-						end
-					end)
-					toggle1.InputEnded:Connect(function(input)
-						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-							Tween(toggle1, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(41, 21) }):Play()
-						end
-					end)
 
 					table.insert(WindowFunctions.SearchableElements, {
 						Name = Settings.Name,
@@ -4786,27 +4758,10 @@ function MacLib:Window(Settings)
 			end
 
 			local function SelectCurrentTab()
-				local easetime = 0.18
+				local easetime = 0.15
 
 				if currentTabInstance then
-					-- Eski sekme fade out animasyonu
-					local oldTab = currentTabInstance
-					if oldTab:FindFirstChildOfClass("CanvasGroup") == nil then
-						local oldCanvas = Instance.new("CanvasGroup")
-						oldCanvas.Size = UDim2.fromScale(1,1)
-						oldCanvas.BackgroundTransparency = 1
-						oldCanvas.GroupTransparency = 0
-						oldCanvas.ZIndex = oldTab.ZIndex
-						oldCanvas.Parent = oldTab.Parent
-						oldTab.Parent = oldCanvas
-						Tween(oldCanvas, TweenInfo.new(0.12, Enum.EasingStyle.Sine), { GroupTransparency = 1 }):Play()
-						task.delay(0.15, function()
-							oldTab.Parent = nil
-							oldCanvas:Destroy()
-						end)
-					else
-						oldTab.Parent = nil
-					end
+					currentTabInstance.Parent = nil
 				end
 
 				for _, v in pairs(tabSwitchersScrollingFrame:GetDescendants()) do
@@ -4817,70 +4772,23 @@ function MacLib:Window(Settings)
 						Tween(v:FindFirstChild("TabSwitcherUIStroke"), TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
 							Transparency = 1
 						}):Play()
-						local nameLabel = v:FindFirstChild("TabSwitcherName")
-						if nameLabel then
-							Tween(nameLabel, TweenInfo.new(easetime, Enum.EasingStyle.Sine), { TextTransparency = 0.4 }):Play()
-						end
-						local tabImg = v:FindFirstChild("TabImage")
-						if tabImg then
-							Tween(tabImg, TweenInfo.new(easetime, Enum.EasingStyle.Sine), { ImageTransparency = 0.4 }):Play()
-						end
 					end
 				end
 
-				-- Yeni sekme içeriğini fade in ile göster
-				local newTabFrame = tabs[tabSwitcher]
-				newTabFrame.Parent = content
-				currentTabInstance = newTabFrame
+				tabs[tabSwitcher].Parent = content
+				currentTabInstance = tabs[tabSwitcher]
 				currentTab.Text = Settings.Name
 
-				-- Seçili tab switcher animasyonu
 				Tween(tabSwitcher, TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
 					BackgroundTransparency = 0.98
 				}):Play()
 				Tween(tabSwitcherUIStroke, TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
-					Transparency = 0.9
+					Transparency = 0.95
 				}):Play()
-				local selNameLabel = tabSwitcher:FindFirstChild("TabSwitcherName")
-				if selNameLabel then
-					Tween(selNameLabel, TweenInfo.new(easetime, Enum.EasingStyle.Sine), { TextTransparency = 0.05 }):Play()
-				end
-				local selTabImg = tabSwitcher:FindFirstChild("TabImage")
-				if selTabImg then
-					Tween(selTabImg, TweenInfo.new(easetime, Enum.EasingStyle.Sine), { ImageTransparency = 0.05 }):Play()
-				end
 			end
 
 			tabSwitcher.MouseButton1Click:Connect(function()
 				SelectCurrentTab()
-			end)
-
-			-- Tab switcher hover animasyonları
-			tabSwitcher.MouseEnter:Connect(function()
-				if tabSwitcher.BackgroundTransparency > 0.98 then
-					Tween(tabSwitcher, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 0.97 }):Play()
-				end
-				local nm = tabSwitcher:FindFirstChild("TabSwitcherName")
-				if nm and nm.TextTransparency > 0.1 then
-					Tween(nm, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { TextTransparency = 0.2 }):Play()
-				end
-				local img = tabSwitcher:FindFirstChild("TabImage")
-				if img and img.ImageTransparency > 0.1 then
-					Tween(img, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { ImageTransparency = 0.2 }):Play()
-				end
-			end)
-			tabSwitcher.MouseLeave:Connect(function()
-				if tabSwitcher.BackgroundTransparency > 0.97 and tabSwitcher.BackgroundTransparency < 0.99 then
-					Tween(tabSwitcher, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 1 }):Play()
-				end
-				local nm = tabSwitcher:FindFirstChild("TabSwitcherName")
-				if nm and nm.TextTransparency < 0.35 then
-					Tween(nm, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { TextTransparency = 0.4 }):Play()
-				end
-				local img = tabSwitcher:FindFirstChild("TabImage")
-				if img and img.ImageTransparency < 0.35 then
-					Tween(img, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { ImageTransparency = 0.4 }):Play()
-				end
 			end)
 
 			function TabFunctions:Select()
@@ -5333,11 +5241,6 @@ function MacLib:Window(Settings)
 				end
 			end
 			
-			-- Dialog buton press scale
-			local dialogBtnScale = Instance.new("UIScale")
-			dialogBtnScale.Scale = 1
-			dialogBtnScale.Parent = button
-
 			button.MouseButton1Click:Connect(function()
 				if dialogCanvas.GroupTransparency ~= 0 then return end
 				if v.Callback then
@@ -5354,18 +5257,6 @@ function MacLib:Window(Settings)
 			end)
 			button.MouseLeave:Connect(function()
 				ChangeState("Idle")
-			end)
-
-			-- Dialog buton basma animasyonu
-			button.InputBegan:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-					Tween(dialogBtnScale, TweenInfo.new(0.1, Enum.EasingStyle.Sine), { Scale = 0.94 }):Play()
-				end
-			end)
-			button.InputEnded:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-					Tween(dialogBtnScale, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = 1 }):Play()
-				end
 			end)
 		end
 		
@@ -5395,25 +5286,7 @@ function MacLib:Window(Settings)
 
 	function WindowFunctions:SetState(State)
 		windowState = State
-		if State then
-			base.Visible = true
-			Tween(baseUIScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = baseUIScale.Scale }):Play()
-			local savedScale = baseUIScale.Scale
-			baseUIScale.Scale = savedScale * 0.85
-			Tween(baseUIScale, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = savedScale }):Play()
-			Tween(base, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { BackgroundTransparency = acrylicBlur and 0.05 or 0 }):Play()
-		else
-			local savedScale = baseUIScale.Scale
-			local t1 = Tween(baseUIScale, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.In), { Scale = savedScale * 0.88 })
-			local t2 = Tween(base, TweenInfo.new(0.22, Enum.EasingStyle.Sine, Enum.EasingDirection.In), { BackgroundTransparency = 1 })
-			t1:Play()
-			t2:Play()
-			t1.Completed:Connect(function()
-				base.Visible = false
-				base.BackgroundTransparency = acrylicBlur and 0.05 or 0
-				baseUIScale.Scale = savedScale
-			end)
-		end
+		base.Visible = State
 	end
 
 	function WindowFunctions:GetState()
@@ -5456,23 +5329,6 @@ function MacLib:Window(Settings)
 	exit.MouseButton1Click:Connect(function()
 		WindowFunctions:Unload()
 	end)
-
-	-- Pencere kontrol tuşları basma animasyonları
-	local function addDotPressAnim(btn)
-		if not btn.Active then return end
-		btn.InputBegan:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then
-				Tween(btn, TweenInfo.new(0.08, Enum.EasingStyle.Sine), { Size = UDim2.fromOffset(6, 6) }):Play()
-			end
-		end)
-		btn.InputEnded:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then
-				Tween(btn, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.fromOffset(8, 8) }):Play()
-			end
-		end)
-	end
-	addDotPressAnim(exit)
-	addDotPressAnim(minimize)
 
 	function WindowFunctions:SetKeybind(Keycode)
 		MenuKeybind = Keycode
@@ -5541,16 +5397,6 @@ function MacLib:Window(Settings)
 	ContentProvider:PreloadAsync(assetList)
 	macLib.Enabled = true
 	windowState = true
-
-	-- ===== PENCERE AÇILIŞ ANİMASYONU =====
-	do
-		local openScale = baseUIScale.Scale
-		baseUIScale.Scale = 0.80
-		base.BackgroundTransparency = 1
-		Tween(baseUIScale, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Scale = openScale }):Play()
-		Tween(base, TweenInfo.new(0.35, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), { BackgroundTransparency = acrylicBlur and 0.05 or 0 }):Play()
-	end
-	-- ===== END PENCERE AÇILIŞ ANİMASYONU =====
 
 	-- ===== MOBİL TOGGLE BUTONU (sadece touch ekranlarda görünür) =====
 	if UIS.TouchEnabled and not UIS.KeyboardEnabled then
