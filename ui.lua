@@ -161,8 +161,8 @@ function MacLib:Window(Settings)
 	local baseUIStroke = Instance.new("UIStroke")
 	baseUIStroke.Name = "BaseUIStroke"
 	baseUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	baseUIStroke.Color = Color3.fromRGB(66, 135, 245)
-	baseUIStroke.Transparency = 0
+	baseUIStroke.Color = Color3.fromRGB(255, 255, 255)
+	baseUIStroke.Transparency = 0.9
 	baseUIStroke.Parent = base
 
 	local sidebar = Instance.new("Frame")
@@ -172,7 +172,7 @@ function MacLib:Window(Settings)
 	sidebar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	sidebar.BorderSizePixel = 0
 	sidebar.Position = UDim2.fromScale(-3.52e-08, 4.69e-08)
-	sidebar.Size = UDim2.new(0, 60, 1, 0)
+	sidebar.Size = UDim2.fromScale(0.325, 1)
 
 	local divider = Instance.new("Frame")
 	divider.Name = "Divider"
@@ -377,7 +377,7 @@ function MacLib:Window(Settings)
 	globalSettingsButton.BorderSizePixel = 0
 	globalSettingsButton.Position = UDim2.fromScale(1, 0.5)
 	globalSettingsButton.Size = UDim2.fromOffset(15, 15)
-	globalSettingsButton.Parent = informationHolder; globalSettingsButton.Visible = false
+	globalSettingsButton.Parent = informationHolder
 
 	local function ChangeGlobalSettingsButtonState(State)
 		if State == "Default" then
@@ -427,7 +427,7 @@ function MacLib:Window(Settings)
 	title.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	title.BorderSizePixel = 0
 	title.Size = UDim2.new(1, -20, 0, 0)
-	title.Parent = titleFrame; title.Visible = false
+	title.Parent = titleFrame
 
 	local subtitle = Instance.new("TextLabel")
 	subtitle.Name = "Subtitle"
@@ -452,7 +452,7 @@ function MacLib:Window(Settings)
 	subtitle.BorderSizePixel = 0
 	subtitle.LayoutOrder = 1
 	subtitle.Size = UDim2.new(1, -20, 0, 0)
-	subtitle.Parent = titleFrame; subtitle.Visible = false; title.Visible = false
+	subtitle.Parent = titleFrame
 
 	local titleFrameUIListLayout = Instance.new("UIListLayout")
 	titleFrameUIListLayout.Name = "TitleFrameUIListLayout"
@@ -497,7 +497,7 @@ function MacLib:Window(Settings)
 	local informationGroupUIPadding = Instance.new("UIPadding")
 	informationGroupUIPadding.Name = "InformationGroupUIPadding"
 	informationGroupUIPadding.PaddingBottom = UDim.new(0, 17)
-	informationGroupUIPadding.PaddingLeft = UDim.new(0, 14)
+	informationGroupUIPadding.PaddingLeft = UDim.new(0, 25)
 	informationGroupUIPadding.Parent = informationGroup
 
 	local informationGroupUIListLayout = Instance.new("UIListLayout")
@@ -529,7 +529,7 @@ function MacLib:Window(Settings)
 	local baseUIStroke2 = Instance.new("UIStroke")
 	baseUIStroke2.Name = "BaseUIStroke"
 	baseUIStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	baseUIStroke2.Color = Color3.fromRGB(65, 105, 225)
+	baseUIStroke2.Color = Color3.fromRGB(255, 255, 255)
 	baseUIStroke2.Transparency = 0.9
 	baseUIStroke2.Parent = headshot
 
@@ -563,7 +563,7 @@ function MacLib:Window(Settings)
 	displayName.BackgroundTransparency = 1
 	displayName.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	displayName.BorderSizePixel = 0
-	displayName.Parent = userAndDisplayFrame; displayName.Visible = false
+	displayName.Parent = userAndDisplayFrame
 	displayName.Size = UDim2.fromScale(1,0)
 
 	local userAndDisplayFrameUIPadding = Instance.new("UIPadding")
@@ -598,7 +598,7 @@ function MacLib:Window(Settings)
 	username.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	username.BorderSizePixel = 0
 	username.LayoutOrder = 1
-	username.Parent = userAndDisplayFrame; username.Visible = false
+	username.Parent = userAndDisplayFrame
 	username.Size = UDim2.fromScale(1,0)
 
 	userAndDisplayFrame.Parent = informationGroup
@@ -669,7 +669,7 @@ function MacLib:Window(Settings)
 	content.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	content.BorderSizePixel = 0
 	content.Position = UDim2.fromScale(1, 4.69e-08)
-	content.Size = UDim2.new(1, -60, 1, 0)
+	content.Size = UDim2.fromScale(0.675, 1)
 
 	local topbar = Instance.new("Frame")
 	topbar.Name = "Topbar"
@@ -869,7 +869,7 @@ function MacLib:Window(Settings)
 	currentTab.RichText = true
 	currentTab.TextColor3 = Color3.fromRGB(255, 255, 255)
 	currentTab.TextSize = 15
-	currentTab.TextTransparency = 0.2
+	currentTab.TextTransparency = 0.5
 	currentTab.TextTruncate = Enum.TextTruncate.SplitWord
 	currentTab.TextXAlignment = Enum.TextXAlignment.Left
 	currentTab.TextYAlignment = Enum.TextYAlignment.Top
@@ -1582,7 +1582,7 @@ function MacLib:Window(Settings)
 			tabSwitcher.TextSize = 14
 			tabSwitcher.AutoButtonColor = false
 			tabSwitcher.AnchorPoint = Vector2.new(0.5, 0)
-			tabSwitcher.BackgroundColor3 = Color3.fromRGB(65, 105, 225)
+			tabSwitcher.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			tabSwitcher.BackgroundTransparency = 1
 			tabSwitcher.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			tabSwitcher.BorderSizePixel = 0
@@ -1599,13 +1599,13 @@ function MacLib:Window(Settings)
 			local tabSwitcherUIStroke = Instance.new("UIStroke")
 			tabSwitcherUIStroke.Name = "TabSwitcherUIStroke"
 			tabSwitcherUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-			tabSwitcherUIStroke.Color = Color3.fromRGB(65, 105, 225)
+			tabSwitcherUIStroke.Color = Color3.fromRGB(255, 255, 255)
 			tabSwitcherUIStroke.Transparency = 1
 			tabSwitcherUIStroke.Parent = tabSwitcher
 
 			local tabSwitcherUIListLayout = Instance.new("UIListLayout")
 			tabSwitcherUIListLayout.Name = "TabSwitcherUIListLayout"
-			tabSwitcherUIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+			tabSwitcherUIListLayout.Padding = UDim.new(0, 9)
 			tabSwitcherUIListLayout.FillDirection = Enum.FillDirection.Horizontal
 			tabSwitcherUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			tabSwitcherUIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
@@ -1635,7 +1635,7 @@ function MacLib:Window(Settings)
 			tabSwitcherName.RichText = true
 			tabSwitcherName.TextColor3 = Color3.fromRGB(255, 255, 255)
 			tabSwitcherName.TextSize = 16
-			tabSwitcherName.TextTransparency = 0.2
+			tabSwitcherName.TextTransparency = 0.4
 			tabSwitcherName.TextTruncate = Enum.TextTruncate.SplitWord
 			tabSwitcherName.TextXAlignment = Enum.TextXAlignment.Left
 			tabSwitcherName.TextYAlignment = Enum.TextYAlignment.Top
@@ -1645,13 +1645,13 @@ function MacLib:Window(Settings)
 			tabSwitcherName.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			tabSwitcherName.BorderSizePixel = 0
 			tabSwitcherName.Size = UDim2.fromScale(1, 0)
-			tabSwitcherName.Parent = tabSwitcher; tabSwitcherName.Visible = false
+			tabSwitcherName.Parent = tabSwitcher
 			tabSwitcherName.LayoutOrder = 1
 
 			local tabSwitcherUIPadding = Instance.new("UIPadding")
 			tabSwitcherUIPadding.Name = "TabSwitcherUIPadding"
-			tabSwitcherUIPadding.PaddingLeft = UDim.new(0, 0)
-			tabSwitcherUIPadding.PaddingRight = UDim.new(0, 0)
+			tabSwitcherUIPadding.PaddingLeft = UDim.new(0, 24)
+			tabSwitcherUIPadding.PaddingRight = UDim.new(0, 35)
 			tabSwitcherUIPadding.PaddingTop = UDim.new(0, 1)
 			tabSwitcherUIPadding.Parent = tabSwitcher
 
@@ -1746,7 +1746,7 @@ function MacLib:Window(Settings)
 				section.Name = "Section"
 				section.AutomaticSize = Enum.AutomaticSize.Y
 				section.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				section.BackgroundTransparency = 0.95
+				section.BackgroundTransparency = 0.98
 				section.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				section.BorderSizePixel = 0
 				section.Position = UDim2.fromScale(0, 6.78e-08)
@@ -1761,7 +1761,7 @@ function MacLib:Window(Settings)
 				sectionUIStroke.Name = "SectionUIStroke"
 				sectionUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 				sectionUIStroke.Color = Color3.fromRGB(255, 255, 255)
-				sectionUIStroke.Transparency = 0.88
+				sectionUIStroke.Transparency = 0.95
 				sectionUIStroke.Parent = section
 
 				local sectionUIListLayout = Instance.new("UIListLayout")
@@ -1800,7 +1800,7 @@ function MacLib:Window(Settings)
 					buttonInteract.RichText = true
 					buttonInteract.TextColor3 = Color3.fromRGB(255, 255, 255)
 					buttonInteract.TextSize = 13
-					buttonInteract.TextTransparency = 0.3
+					buttonInteract.TextTransparency = 0.5
 					buttonInteract.TextTruncate = Enum.TextTruncate.AtEnd
 					buttonInteract.TextXAlignment = Enum.TextXAlignment.Left
 					buttonInteract.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -1904,7 +1904,7 @@ function MacLib:Window(Settings)
 					toggleName.RichText = true
 					toggleName.TextColor3 = Color3.fromRGB(255, 255, 255)
 					toggleName.TextSize = 13
-					toggleName.TextTransparency = 0.3
+					toggleName.TextTransparency = 0.5
 					toggleName.TextTruncate = Enum.TextTruncate.AtEnd
 					toggleName.TextXAlignment = Enum.TextXAlignment.Left
 					toggleName.TextYAlignment = Enum.TextYAlignment.Top
@@ -1942,7 +1942,7 @@ function MacLib:Window(Settings)
 					local togglerHead = Instance.new("ImageLabel")
 					togglerHead.Name = "TogglerHead"
 					togglerHead.Image = "rbxassetid://18772309008"
-					togglerHead.ImageColor3 = Color3.fromRGB(80, 80, 85)
+					togglerHead.ImageColor3 = Color3.fromRGB(91, 91, 91)
 					togglerHead.AnchorPoint = Vector2.new(1, 0.5)
 					togglerHead.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 					togglerHead.BackgroundTransparency = 1
@@ -1958,8 +1958,8 @@ function MacLib:Window(Settings)
 					local TweenSettings = {
 						Info = TweenInfo.new(0.2, Enum.EasingStyle.Sine),
 
-						EnabledColors = {Toggle = Color3.fromRGB(41, 121, 255), ToggleHead = Color3.fromRGB(255, 255, 255)},
-						DisabledColors = {Toggle = Color3.fromRGB(50, 50, 55), ToggleHead = Color3.fromRGB(80, 80, 85)},
+						EnabledColors = {Toggle = Color3.fromRGB(87, 86, 86), ToggleHead = Color3.fromRGB(255, 255, 255)},
+						DisabledColors = {Toggle = Color3.fromRGB(61, 61, 61), ToggleHead = Color3.fromRGB(91, 91, 91)},
 
 						EnabledPosition = UDim2.new(1, 0, 0.5, 0),
 						DisabledPosition = UDim2.new(0.5, 0, 0.5, 0),
@@ -2061,7 +2061,7 @@ function MacLib:Window(Settings)
 					sliderName.RichText = true
 					sliderName.TextColor3 = Color3.fromRGB(255, 255, 255)
 					sliderName.TextSize = 13
-					sliderName.TextTransparency = 0.3
+					sliderName.TextTransparency = 0.5
 					sliderName.TextTruncate = Enum.TextTruncate.AtEnd
 					sliderName.TextXAlignment = Enum.TextXAlignment.Left
 					sliderName.TextYAlignment = Enum.TextYAlignment.Top
@@ -2136,7 +2136,7 @@ function MacLib:Window(Settings)
 					local sliderBar = Instance.new("ImageLabel")
 					sliderBar.Name = "SliderBar"
 					sliderBar.Image = "rbxassetid://18772615246"
-					sliderBar.ImageColor3 = Color3.fromRGB(41, 121, 255)
+					sliderBar.ImageColor3 = Color3.fromRGB(87, 86, 86)
 					sliderBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 					sliderBar.BackgroundTransparency = 1
 					sliderBar.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2653,7 +2653,7 @@ function MacLib:Window(Settings)
 					dropdownName.RichText = true
 					dropdownName.TextColor3 = Color3.fromRGB(255, 255, 255)
 					dropdownName.TextSize = 13
-					dropdownName.TextTransparency = 0.3
+					dropdownName.TextTransparency = 0.5
 					dropdownName.TextTruncate = Enum.TextTruncate.SplitWord
 					dropdownName.TextXAlignment = Enum.TextXAlignment.Left
 					dropdownName.AutomaticSize = Enum.AutomaticSize.Y
@@ -2667,8 +2667,8 @@ function MacLib:Window(Settings)
 					local dropdownUIStroke = Instance.new("UIStroke")
 					dropdownUIStroke.Name = "DropdownUIStroke"
 					dropdownUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-					dropdownUIStroke.Color = Color3.fromRGB(41, 121, 255)
-					dropdownUIStroke.Transparency = 0.7
+					dropdownUIStroke.Color = Color3.fromRGB(255, 255, 255)
+					dropdownUIStroke.Transparency = 0.95
 					dropdownUIStroke.Parent = dropdown
 
 					local dropdownUICorner = Instance.new("UICorner")
@@ -4503,7 +4503,7 @@ function MacLib:Window(Settings)
 					headerText.Text = Settings.Text or Settings.Name
 					headerText.TextColor3 = Color3.fromRGB(255, 255, 255)
 					headerText.TextSize = 16
-					headerText.TextTransparency = 0.1
+					headerText.TextTransparency = 0.4
 					headerText.TextWrapped = true
 					headerText.TextXAlignment = Enum.TextXAlignment.Left
 					headerText.AutomaticSize = Enum.AutomaticSize.Y
