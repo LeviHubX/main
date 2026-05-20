@@ -173,8 +173,8 @@ function MacLib:Window(Settings)
 	sidebar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	sidebar.BorderSizePixel = 0
 	-- Sidebar tam bitişik (boşluksuz)
-	sidebar.Position = UDim2.new(0, -220, 0, 0)
-	sidebar.Size = UDim2.new(0, 220, 1, 0)
+	sidebar.Position = UDim2.new(0, -72, 0, 0)
+	sidebar.Size = UDim2.new(0, 70, 1, 0)
 	sidebar.ZIndex = 0
 
 	local sidebarUICorner = Instance.new("UICorner")
@@ -197,7 +197,7 @@ function MacLib:Window(Settings)
 	windowControls.BackgroundTransparency = 1
 	windowControls.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	windowControls.BorderSizePixel = 0
-	windowControls.Size = UDim2.new(1, 0, 0, 31)
+	windowControls.Size = UDim2.new(1, 0, 0, 0)\r\n	windowControls.Visible = false
 
 	local controls = Instance.new("Frame")
 	controls.Name = "Controls"
@@ -343,7 +343,7 @@ function MacLib:Window(Settings)
 	information.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	information.BorderSizePixel = 0
 	information.Position = UDim2.fromOffset(0, 31)
-	information.Size = UDim2.new(1, 0, 0, 60)
+	information.Size = UDim2.new(1, 0, 0, 0)\r\n	information.Visible = false
 
 	local divider2 = Instance.new("Frame")
 	divider2.Name = "Divider"
@@ -479,8 +479,8 @@ function MacLib:Window(Settings)
 	sidebarGroup.BackgroundTransparency = 1
 	sidebarGroup.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	sidebarGroup.BorderSizePixel = 0
-	sidebarGroup.Position = UDim2.fromOffset(0, 91)
-	sidebarGroup.Size = UDim2.new(1, 0, 1, -91)
+	sidebarGroup.Position = UDim2.fromOffset(0, 14)
+	sidebarGroup.Size = UDim2.new(1, 0, 1, -90)
 
 	local userInfo = Instance.new("Frame")
 	userInfo.Name = "UserInfo"
@@ -490,7 +490,7 @@ function MacLib:Window(Settings)
 	userInfo.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	userInfo.BorderSizePixel = 0
 	userInfo.Position = UDim2.fromScale(0, 1)
-	userInfo.Size = UDim2.new(1, 0, 0, 107)
+	userInfo.Size = UDim2.new(1, 0, 0, 55)
 
 	local informationGroup = Instance.new("Frame")
 	informationGroup.Name = "InformationGroup"
@@ -524,7 +524,7 @@ function MacLib:Window(Settings)
 	headshot.BackgroundTransparency = 1
 	headshot.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	headshot.BorderSizePixel = 0
-	headshot.Size = UDim2.fromOffset(32, 32)
+	headshot.Size = UDim2.fromOffset(28, 28)
 	headshot.Image = (isReady and headshotImage) or "rbxassetid://0"
 
 	local uICorner3 = Instance.new("UICorner")
@@ -621,9 +621,9 @@ function MacLib:Window(Settings)
 
 	local sidebarGroupUIPadding = Instance.new("UIPadding")
 	sidebarGroupUIPadding.Name = "SidebarGroupUIPadding"
-	sidebarGroupUIPadding.PaddingLeft = UDim.new(0, 8)
-	sidebarGroupUIPadding.PaddingRight = UDim.new(0, 8)
-	sidebarGroupUIPadding.PaddingTop = UDim.new(0, 31)
+	sidebarGroupUIPadding.PaddingLeft = UDim.new(0, 5)
+	sidebarGroupUIPadding.PaddingRight = UDim.new(0, 5)
+	sidebarGroupUIPadding.PaddingTop = UDim.new(0, 8)
 	sidebarGroupUIPadding.Parent = sidebarGroup
 
 	local tabSwitchers = Instance.new("Frame")
@@ -632,7 +632,7 @@ function MacLib:Window(Settings)
 	tabSwitchers.BackgroundTransparency = 1
 	tabSwitchers.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	tabSwitchers.BorderSizePixel = 0
-	tabSwitchers.Size = UDim2.new(1, 0, 1, -107)
+	tabSwitchers.Size = UDim2.new(1, 0, 1, -55)
 
 	local tabSwitchersScrollingFrame = Instance.new("ScrollingFrame")
 	tabSwitchersScrollingFrame.Name = "TabSwitchersScrollingFrame"
@@ -650,7 +650,7 @@ function MacLib:Window(Settings)
 
 	local tabSwitchersScrollingFrameUIListLayout = Instance.new("UIListLayout")
 	tabSwitchersScrollingFrameUIListLayout.Name = "TabSwitchersScrollingFrameUIListLayout"
-	tabSwitchersScrollingFrameUIListLayout.Padding = UDim.new(0, 8)
+	tabSwitchersScrollingFrameUIListLayout.Padding = UDim.new(0, 4)
 	tabSwitchersScrollingFrameUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	tabSwitchersScrollingFrameUIListLayout.Parent = tabSwitchersScrollingFrame
 
@@ -1593,7 +1593,7 @@ function MacLib:Window(Settings)
 			tabSwitcher.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			tabSwitcher.BorderSizePixel = 0
 			tabSwitcher.Position = UDim2.fromScale(0.5, 0)
-			tabSwitcher.Size = UDim2.new(1, -10, 0, 40)
+			tabSwitcher.Size = UDim2.new(1, -10, 0, 44)
 
 			tabIndex += 1
 			tabSwitcher.LayoutOrder = tabIndex
@@ -1621,12 +1621,12 @@ function MacLib:Window(Settings)
 				local tabImage = Instance.new("ImageLabel")
 				tabImage.Name = "TabImage"
 				tabImage.Image = Settings.Image
-				tabImage.ImageTransparency = 0.4
+				tabImage.ImageTransparency = 0.3
 				tabImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				tabImage.BackgroundTransparency = 1
 				tabImage.BorderColor3 = Color3.fromRGB(0, 0, 0)
 				tabImage.BorderSizePixel = 0
-				tabImage.Size = UDim2.fromOffset(16, 16)
+				tabImage.Size = UDim2.fromOffset(20, 20)
 				tabImage.Parent = tabSwitcher
 			end
 
@@ -1656,8 +1656,8 @@ function MacLib:Window(Settings)
 
 			local tabSwitcherUIPadding = Instance.new("UIPadding")
 			tabSwitcherUIPadding.Name = "TabSwitcherUIPadding"
-			tabSwitcherUIPadding.PaddingLeft = UDim.new(0, 12)
-			tabSwitcherUIPadding.PaddingRight = UDim.new(0, 12)
+			tabSwitcherUIPadding.PaddingLeft = UDim.new(0, 0)
+			tabSwitcherUIPadding.PaddingRight = UDim.new(0, 0)
 			tabSwitcherUIPadding.PaddingTop = UDim.new(0, 1)
 			tabSwitcherUIPadding.Parent = tabSwitcher
 
