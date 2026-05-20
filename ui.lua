@@ -106,7 +106,7 @@ function MacLib:Window(Settings)
 		if not cam then return end
 
 		local vp = cam.ViewportSize
-		-- Kamera henÃ¼z hazÄ±r deÄŸilse bir frame bekle
+		-- Kamera henÃƒÂ¼z hazÃ„Â±r deÃ„Å¸ilse bir frame bekle
 		if vp.X == 0 or vp.Y == 0 then
 			task.defer(updateScale)
 			return
@@ -123,16 +123,16 @@ function MacLib:Window(Settings)
 		local scale = math.min(scaleX, scaleY)
 
 		if isMobile then
-			-- Mobilde ekranÄ±n %90'Ä± kadar kapla
+			-- Mobilde ekranÃ„Â±n %90'Ã„Â± kadar kapla
 			scale = scale * 0.90
 		end
 
-		-- 1'den bÃ¼yÃ¼k scale gereksiz, 0.2'den kÃ¼Ã§Ã¼k Ã§ok kÃ¼Ã§Ã¼k
+		-- 1'den bÃƒÂ¼yÃƒÂ¼k scale gereksiz, 0.2'den kÃƒÂ¼ÃƒÂ§ÃƒÂ¼k ÃƒÂ§ok kÃƒÂ¼ÃƒÂ§ÃƒÂ¼k
 		scale = math.clamp(scale, 0.2, 1)
 		baseUIScale.Scale = scale
 	end
 
-	-- Kamera deÄŸiÅŸtiÄŸinde (rotate/resize) yeniden hesapla
+	-- Kamera deÃ„Å¸iÃ…Å¸tiÃ„Å¸inde (rotate/resize) yeniden hesapla
 	local function connectCamera()
 		local cam = workspace.CurrentCamera
 		if cam then
@@ -146,7 +146,7 @@ function MacLib:Window(Settings)
 	end)
 	connectCamera()
 
-	-- YÃ¼klendikten sonra gÃ¼venli ÅŸekilde Ã§alÄ±ÅŸtÄ±r
+	-- YÃƒÂ¼klendikten sonra gÃƒÂ¼venli Ã…Å¸ekilde ÃƒÂ§alÃ„Â±Ã…Å¸tÃ„Â±r
 	task.defer(function()
 		task.wait()
 		updateScale()
@@ -167,23 +167,27 @@ function MacLib:Window(Settings)
 
 	local sidebar = Instance.new("Frame")
 	sidebar.Name = "Sidebar"
-	sidebar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	sidebar.BackgroundTransparency = 1
+	sidebar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+	sidebar.BackgroundTransparency = 0.05
 	sidebar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	sidebar.BorderSizePixel = 0
-	sidebar.Position = UDim2.fromScale(-3.52e-08, 4.69e-08)
-	sidebar.Size = UDim2.new(0, 60, 1, 0)
+	-- Sidebar base'in solu dÄ±ÅŸÄ±nda durur (negatif X offset)
+	sidebar.Position = UDim2.new(0, -228, 0, 0)
+	sidebar.Size = UDim2.new(0, 220, 1, 0)
 
-	local divider = Instance.new("Frame")
-	divider.Name = "Divider"
-	divider.AnchorPoint = Vector2.new(1, 0)
-	divider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	divider.BackgroundTransparency = 0.9
-	divider.BorderColor3 = Color3.fromRGB(0, 0, 0)
-	divider.BorderSizePixel = 0
-	divider.Position = UDim2.fromScale(1, 0)
-	divider.Size = UDim2.new(0, 1, 1, 0)
-	divider.Parent = sidebar
+	local sidebarUICorner = Instance.new("UICorner")
+	sidebarUICorner.Name = "SidebarUICorner"
+	sidebarUICorner.CornerRadius = UDim.new(0, 10)
+	sidebarUICorner.Parent = sidebar
+
+	local sidebarUIStroke = Instance.new("UIStroke")
+	sidebarUIStroke.Name = "SidebarUIStroke"
+	sidebarUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	sidebarUIStroke.Color = Color3.fromRGB(66, 135, 245)
+	sidebarUIStroke.Transparency = 0
+	sidebarUIStroke.Parent = sidebar
+
+	-- Divider kaldÄ±rÄ±ldÄ±: sidebar artÄ±k ayrÄ± kart
 
 	local windowControls = Instance.new("Frame")
 	windowControls.Name = "WindowControls"
@@ -615,8 +619,8 @@ function MacLib:Window(Settings)
 
 	local sidebarGroupUIPadding = Instance.new("UIPadding")
 	sidebarGroupUIPadding.Name = "SidebarGroupUIPadding"
-	sidebarGroupUIPadding.PaddingLeft = UDim.new(0, 10)
-	sidebarGroupUIPadding.PaddingRight = UDim.new(0, 10)
+	sidebarGroupUIPadding.PaddingLeft = UDim.new(0, 8)
+	sidebarGroupUIPadding.PaddingRight = UDim.new(0, 8)
 	sidebarGroupUIPadding.PaddingTop = UDim.new(0, 31)
 	sidebarGroupUIPadding.Parent = sidebarGroup
 
@@ -644,7 +648,7 @@ function MacLib:Window(Settings)
 
 	local tabSwitchersScrollingFrameUIListLayout = Instance.new("UIListLayout")
 	tabSwitchersScrollingFrameUIListLayout.Name = "TabSwitchersScrollingFrameUIListLayout"
-	tabSwitchersScrollingFrameUIListLayout.Padding = UDim.new(0, 17)
+	tabSwitchersScrollingFrameUIListLayout.Padding = UDim.new(0, 8)
 	tabSwitchersScrollingFrameUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	tabSwitchersScrollingFrameUIListLayout.Parent = tabSwitchersScrollingFrame
 
@@ -663,13 +667,13 @@ function MacLib:Window(Settings)
 
 	local content = Instance.new("Frame")
 	content.Name = "Content"
-	content.AnchorPoint = Vector2.new(1, 0)
+	content.AnchorPoint = Vector2.new(0, 0)
 	content.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	content.BackgroundTransparency = 1
 	content.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	content.BorderSizePixel = 0
-	content.Position = UDim2.fromScale(1, 4.69e-08)
-	content.Size = UDim2.new(1, -60, 1, 0)
+	content.Position = UDim2.fromScale(0, 0)
+	content.Size = UDim2.fromScale(1, 1)
 
 	local topbar = Instance.new("Frame")
 	topbar.Name = "Topbar"
@@ -1431,7 +1435,7 @@ function MacLib:Window(Settings)
 			Enum.FontWeight.Medium,
 			Enum.FontStyle.Normal
 		)
-		checkmark.Text = "âœ“"
+		checkmark.Text = "Ã¢Å“â€œ"
 		checkmark.TextColor3 = Color3.fromRGB(255, 255, 255)
 		checkmark.TextSize = 13
 		checkmark.TextTransparency = 1
@@ -1587,7 +1591,7 @@ function MacLib:Window(Settings)
 			tabSwitcher.BorderColor3 = Color3.fromRGB(0, 0, 0)
 			tabSwitcher.BorderSizePixel = 0
 			tabSwitcher.Position = UDim2.fromScale(0.5, 0)
-			tabSwitcher.Size = UDim2.new(1, -21, 0, 40)
+			tabSwitcher.Size = UDim2.new(1, -10, 0, 40)
 
 			tabIndex += 1
 			tabSwitcher.LayoutOrder = tabIndex
@@ -1650,8 +1654,8 @@ function MacLib:Window(Settings)
 
 			local tabSwitcherUIPadding = Instance.new("UIPadding")
 			tabSwitcherUIPadding.Name = "TabSwitcherUIPadding"
-			tabSwitcherUIPadding.PaddingLeft = UDim.new(0, 0)
-			tabSwitcherUIPadding.PaddingRight = UDim.new(0, 0)
+			tabSwitcherUIPadding.PaddingLeft = UDim.new(0, 12)
+			tabSwitcherUIPadding.PaddingRight = UDim.new(0, 12)
 			tabSwitcherUIPadding.PaddingTop = UDim.new(0, 1)
 			tabSwitcherUIPadding.Parent = tabSwitcher
 
@@ -2178,7 +2182,7 @@ function MacLib:Window(Settings)
 							return tostring(math.round(sliderValue))
 						end,
 						Degrees = function(sliderValue)
-							return tostring(math.round(sliderValue)) .. "Â°"
+							return tostring(math.round(sliderValue)) .. "Ã‚Â°"
 						end,
 						Percent = function(sliderValue)
 							local percentage = (sliderValue - Settings.Minimum) / (Settings.Maximum - Settings.Minimum) * 100
@@ -2875,7 +2879,7 @@ function MacLib:Window(Settings)
 						end
 
 						if #Selected > 0 then
-							dropdownName.Text = Settings.Name .. " â€¢ " .. table.concat(Selected, ", ")
+							dropdownName.Text = Settings.Name .. " Ã¢â‚¬Â¢ " .. table.concat(Selected, ", ")
 						else
 							dropdownName.Text = Settings.Name
 						end
@@ -2971,7 +2975,7 @@ function MacLib:Window(Settings)
 							Enum.FontWeight.Medium,
 							Enum.FontStyle.Normal
 						)
-						checkmark.Text = "âœ“"
+						checkmark.Text = "Ã¢Å“â€œ"
 						checkmark.TextColor3 = Color3.fromRGB(255, 255, 255)
 						checkmark.TextSize = 13
 						checkmark.TextTransparency = 1
@@ -4924,7 +4928,7 @@ function MacLib:Window(Settings)
 		local interactable = Instance.new("TextButton")
 		interactable.Name = "Interactable"
 		interactable.FontFace = Font.new(assets.interFont)
-		interactable.Text = "âœ“"
+		interactable.Text = "Ã¢Å“â€œ"
 		interactable.TextColor3 = Color3.fromRGB(255, 255, 255)
 		interactable.TextSize = 17
 		interactable.TextTransparency = 0.2
@@ -4958,8 +4962,8 @@ function MacLib:Window(Settings)
 		
 		local styles = {
 			None = function() interactable:Destroy() end,
-			Confirm = function() interactable.Text = "âœ“" end,
-			Cancel = function() interactable.Text = "âœ—" end
+			Confirm = function() interactable.Text = "Ã¢Å“â€œ" end,
+			Cancel = function() interactable.Text = "Ã¢Å“â€”" end
 		}
 
 		local style = styles[Settings.Style] or function() interactable:Destroy() end
@@ -5398,7 +5402,7 @@ function MacLib:Window(Settings)
 	macLib.Enabled = true
 	windowState = true
 
-	-- ===== MOBÄ°L TOGGLE BUTONU (sadece touch ekranlarda gÃ¶rÃ¼nÃ¼r) =====
+	-- ===== MOBÃ„Â°L TOGGLE BUTONU (sadece touch ekranlarda gÃƒÂ¶rÃƒÂ¼nÃƒÂ¼r) =====
 	if UIS.TouchEnabled and not UIS.KeyboardEnabled then
 		local mobileBtn = Instance.new("TextButton")
 		mobileBtn.Name = "MobileToggleBtn"
@@ -5408,7 +5412,7 @@ function MacLib:Window(Settings)
 		mobileBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 		mobileBtn.BackgroundTransparency = 0.15
 		mobileBtn.BorderSizePixel = 0
-		mobileBtn.Text = "â˜°"
+		mobileBtn.Text = "Ã¢ËœÂ°"
 		mobileBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 		mobileBtn.TextSize = 26
 		mobileBtn.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Bold)
@@ -5435,9 +5439,9 @@ function MacLib:Window(Settings)
 			TweenService:Create(mobileBtn, TweenInfo.new(0.15), {BackgroundTransparency = 0.15}):Play()
 		end)
 
-		-- Ä°kon'u aÃ§Ä±k/kapalÄ± duruma gÃ¶re deÄŸiÅŸtir
+		-- Ã„Â°kon'u aÃƒÂ§Ã„Â±k/kapalÃ„Â± duruma gÃƒÂ¶re deÃ„Å¸iÃ…Å¸tir
 		local function updateMobileIcon()
-			mobileBtn.Text = windowState and "âœ•" or "â˜°"
+			mobileBtn.Text = windowState and "Ã¢Å“â€¢" or "Ã¢ËœÂ°"
 		end
 
 		mobileBtn.MouseButton1Click:Connect(function()
@@ -5445,7 +5449,7 @@ function MacLib:Window(Settings)
 			updateMobileIcon()
 		end)
 
-		-- SÃ¼rÃ¼kleme: butonu dikey eksen boyunca kaydÄ±rabilmek iÃ§in
+		-- SÃƒÂ¼rÃƒÂ¼kleme: butonu dikey eksen boyunca kaydÃ„Â±rabilmek iÃƒÂ§in
 		local dragging = false
 		local dragStartY = 0
 		local btnStartY = 0
@@ -5471,7 +5475,7 @@ function MacLib:Window(Settings)
 			end
 		end)
 	end
-	-- ===== END MOBÄ°L TOGGLE BUTONU =====
+	-- ===== END MOBÃ„Â°L TOGGLE BUTONU =====
 
 	return WindowFunctions
 end
