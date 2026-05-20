@@ -93,6 +93,7 @@ function MacLib:Window(Settings)
 	base.BorderSizePixel = 0
 	base.Position = UDim2.fromScale(0.5, 0.5)
 	base.Size = Settings.Size or UDim2.fromOffset(868, 650)
+	base.ZIndex = 1
 
 	local baseUIScale = Instance.new("UIScale")
 	baseUIScale.Name = "BaseUIScale"
@@ -171,9 +172,10 @@ function MacLib:Window(Settings)
 	sidebar.BackgroundTransparency = 0.05
 	sidebar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	sidebar.BorderSizePixel = 0
-	-- Sidebar base'in solu dÄ±ÅŸÄ±nda durur (negatif X offset)
-	sidebar.Position = UDim2.new(0, -228, 0, 0)
+	-- Sidebar tam bitişik (boşluksuz)
+	sidebar.Position = UDim2.new(0, -220, 0, 0)
 	sidebar.Size = UDim2.new(0, 220, 1, 0)
+	sidebar.ZIndex = 0
 
 	local sidebarUICorner = Instance.new("UICorner")
 	sidebarUICorner.Name = "SidebarUICorner"
