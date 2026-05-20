@@ -197,7 +197,8 @@ function MacLib:Window(Settings)
 	windowControls.BackgroundTransparency = 1
 	windowControls.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	windowControls.BorderSizePixel = 0
-	windowControls.Size = UDim2.new(1, 0, 0, 0)\r\n	windowControls.Visible = false
+	windowControls.Size = UDim2.new(1, 0, 0, 0)
+	windowControls.Visible = false
 
 	local controls = Instance.new("Frame")
 	controls.Name = "Controls"
@@ -343,7 +344,8 @@ function MacLib:Window(Settings)
 	information.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	information.BorderSizePixel = 0
 	information.Position = UDim2.fromOffset(0, 31)
-	information.Size = UDim2.new(1, 0, 0, 0)\r\n	information.Visible = false
+	information.Size = UDim2.new(1, 0, 0, 0)
+	information.Visible = false
 
 	local divider2 = Instance.new("Frame")
 	divider2.Name = "Divider"
