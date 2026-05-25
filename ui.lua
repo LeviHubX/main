@@ -44,14 +44,13 @@ local RunService = cloneref(game:GetService('RunService'))
 local Lighting = cloneref(game:GetService('Lighting'))
 local Players = cloneref(game:GetService('Players'))
 local CoreGui = cloneref(game:GetService('CoreGui'))
-local Debris = cloneref(game:GetService('Debris'))
 
 local mouse = Players.LocalPlayer:GetMouse()
 local target_gui = (gethui and gethui()) or Players.LocalPlayer:WaitForChild("PlayerGui")
 local old_Nury = target_gui:FindFirstChild('Nury_Bypass')
 
 if old_Nury then
-    Debris:AddItem(old_Nury, 0)
+    old_Nury:Destroy()
 end
 
 if not isfolder("Nury") then
@@ -119,7 +118,7 @@ function AcrylicBlur:create_folder()
     local old_folder = workspace.CurrentCamera:FindFirstChild('AcrylicBlur')
 
     if old_folder then
-        Debris:AddItem(old_folder, 0)
+        old_folder:Destroy()
     end
 
     local folder = Instance.new('Folder')
@@ -524,7 +523,7 @@ function Library:create_ui()
     local old_Nury = target_gui:FindFirstChild('Nury')
 
     if old_Nury then
-        Debris:AddItem(old_Nury, 0)
+        old_Nury:Destroy()
     end
 
     local Nury = Instance.new('ScreenGui')
