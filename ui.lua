@@ -762,7 +762,7 @@ function Library:create_ui()
             Size = UDim2.fromOffset(698, 479)
         }):Play()
 
-        AcrylicBlur.new(Container)
+        -- AcrylicBlur removed to prevent anti-cheat detection
         self._ui_loaded = true
     end
 
