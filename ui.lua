@@ -1,4 +1,4 @@
-getgenv().GG = {
+local GG = {
     Language = {
         CheckboxEnabledCheckboxEnabled = "Enabled",
         CheckboxDisabled = "Disabled",
@@ -25,7 +25,7 @@ function convertStringToTable(inputString)
     local result = {}
     for value in string.gmatch(inputString, "([^,]+)") do
         local trimmedValue = value:match("^%s*(.-)%s*$")
-        tablein(result, trimmedValue)
+        table.insert(result, trimmedValue)
     end
 
     return result
@@ -35,16 +35,16 @@ function convertTableToString(inputTable)
     return table.concat(inputTable, ", ")
 end
 
-local UserInputService = cloneref(game:GetService('UserInputService'))
-local ContentProvider = cloneref(game:GetService('ContentProvider'))
-local TweenService = cloneref(game:GetService('TweenService'))
-local HttpService = cloneref(game:GetService('HttpService'))
-local TextService = cloneref(game:GetService('TextService'))
-local RunService = cloneref(game:GetService('RunService'))
-local Lighting = cloneref(game:GetService('Lighting'))
-local Players = cloneref(game:GetService('Players'))
-local CoreGui = cloneref(game:GetService('CoreGui'))
-local Debris = cloneref(game:GetService('Debris'))
+local UserInputService = game:GetService('UserInputService')
+local ContentProvider = game:GetService('ContentProvider')
+local TweenService = game:GetService('TweenService')
+local HttpService = game:GetService('HttpService')
+local TextService = game:GetService('TextService')
+local RunService = game:GetService('RunService')
+local Lighting = game:GetService('Lighting')
+local Players = game:GetService('Players')
+local CoreGui = game:GetService('CoreGui')
+local Debris = game:GetService('Debris')
 
 local mouse = Players.LocalPlayer:GetMouse()
 local old_Nury = CoreGui:FindFirstChild('Nury')
@@ -53,9 +53,7 @@ if old_Nury then
     Debris:AddItem(old_Nury, 0)
 end
 
-if not isfolder("Nury") then
-    makefolder("Nury")
-end
+
 
 
 local Connections = setmetatable({
@@ -279,49 +277,17 @@ function AcrylicBlur:change_visiblity(state: boolean)
 end
 
 
+-- In-memory config (no filesystem access)
 local Config = setmetatable({
     save = function(self: any, file_name: any, config: any)
-        local success_save, result = pcall(function()
-            local flags = HttpService:JSONEncode(config)
-            writefile('Nury/'..file_name..'.json', flags)
-        end)
-    
-        if not success_save then
-            warn('failed to save config', result)
-        end
+        -- no-op: config is kept in memory only
     end,
     load = function(self: any, file_name: any, config: any)
-        local success_load, result = pcall(function()
-            if not isfile('Nury/'..file_name..'.json') then
-                self:save(file_name, config)
-        
-                return
-            end
-        
-            local flags = readfile('Nury/'..file_name..'.json')
-        
-            if not flags then
-                self:save(file_name, config)
-        
-                return
-            end
-
-            return HttpService:JSONDecode(flags)
-        end)
-    
-        if not success_load then
-            warn('failed to load config', result)
-        end
-    
-        if not result then
-            result = {
-                _flags = {},
-                _keybinds = {},
-                _library = {}
-            }
-        end
-    
-        return result
+        return {
+            _flags = {},
+            _keybinds = {},
+            _library = {}
+        }
     end
 }, Config)
 
