@@ -43,11 +43,12 @@ local TextService = cloneref(game:GetService('TextService'))
 local RunService = cloneref(game:GetService('RunService'))
 local Lighting = cloneref(game:GetService('Lighting'))
 local Players = cloneref(game:GetService('Players'))
-local CoreGui = gethui and gethui() or cloneref(game:GetService('CoreGui'))
+local CoreGui = cloneref(game:GetService('CoreGui'))
 local Debris = cloneref(game:GetService('Debris'))
 
 local mouse = Players.LocalPlayer:GetMouse()
-local old_Nury = CoreGui:FindFirstChild('Nury')
+local target_gui = (gethui and gethui()) or CoreGui
+local old_Nury = target_gui:FindFirstChild('Nury')
 
 if old_Nury then
     Debris:AddItem(old_Nury, 0)
@@ -355,19 +356,18 @@ function Library.new()
     return self
 end
 
-local SafeGui = gethui and gethui() or cloneref(game:GetService("CoreGui"))
-local NotifScreen = Instance.new("ScreenGui")
-NotifScreen.Name = game:GetService("HttpService"):GenerateGUID(false)
-NotifScreen.Parent = SafeGui
-
 -- Create Notification Container
 local NotificationContainer = Instance.new("Frame")
-NotificationContainer.Name = game:GetService("HttpService"):GenerateGUID(false)
+NotificationContainer.Name = "RobloxCoreGuis"
 NotificationContainer.Size = UDim2.new(0, 300, 0, 0)  -- Fixed width (300px), dynamic height (Y)
 NotificationContainer.Position = UDim2.new(0.8, 0, 0, 10)  -- Right side, offset by 10 from top
 NotificationContainer.BackgroundTransparency = 1
 NotificationContainer.ClipsDescendants = false;
-NotificationContainer.Parent = NotifScreen
+local notifParent = target_gui:FindFirstChild("RobloxCoreGuis_Notif") or Instance.new("ScreenGui")
+notifParent.Name = "RobloxCoreGuis_Notif"
+if syn and syn.protect_gui then syn.protect_gui(notifParent) end
+notifParent.Parent = target_gui
+NotificationContainer.Parent = notifParent
 NotificationContainer.AutomaticSize = Enum.AutomaticSize.Y
 
 -- UIListLayout to arrange notifications vertically
@@ -520,11 +520,18 @@ end
 
 
 function Library:create_ui()
+    local old_Nury = target_gui:FindFirstChild('Nury')
+
+    if old_Nury then
+        Debris:AddItem(old_Nury, 0)
+    end
+
     local Nury = Instance.new('ScreenGui')
     Nury.ResetOnSpawn = false
-    Nury.Name = game:GetService("HttpService"):GenerateGUID(false)
+    Nury.Name = 'Nury'
     Nury.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    Nury.Parent = CoreGui
+    if syn and syn.protect_gui then syn.protect_gui(Nury) end
+    Nury.Parent = target_gui
     
     local Container = Instance.new('Frame')
     Container.ClipsDescendants = true
@@ -762,7 +769,7 @@ function Library:create_ui()
             Size = UDim2.fromOffset(698, 479)
         }):Play()
 
-        -- AcrylicBlur removed to prevent anti-cheat detection
+        AcrylicBlur.new(Container)
         self._ui_loaded = true
     end
 
