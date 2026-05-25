@@ -47,7 +47,15 @@ local CoreGui = cloneref(game:GetService('CoreGui'))
 
 local mouse = Players.LocalPlayer:GetMouse()
 local target_gui = (gethui and gethui()) or Players.LocalPlayer:WaitForChild("PlayerGui")
-local old_Nury = target_gui:FindFirstChild('Nury_Bypass')
+local HttpService = cloneref(game:GetService('HttpService'))
+
+local gui_name = getgenv()._UI_NAME or HttpService:GenerateGUID(false)
+getgenv()._UI_NAME = gui_name
+
+local notif_name = getgenv()._NOTIF_NAME or HttpService:GenerateGUID(false)
+getgenv()._NOTIF_NAME = notif_name
+
+local old_Nury = target_gui:FindFirstChild(gui_name)
 
 if old_Nury then
     old_Nury:Destroy()
@@ -362,8 +370,8 @@ NotificationContainer.Size = UDim2.new(0, 300, 0, 0)  -- Fixed width (300px), dy
 NotificationContainer.Position = UDim2.new(0.8, 0, 0, 10)  -- Right side, offset by 10 from top
 NotificationContainer.BackgroundTransparency = 1
 NotificationContainer.ClipsDescendants = false;
-local notifParent = target_gui:FindFirstChild("RobloxCoreGuis_Notif_Bypass") or Instance.new("ScreenGui")
-notifParent.Name = "RobloxCoreGuis_Notif_Bypass"
+local notifParent = target_gui:FindFirstChild(notif_name) or Instance.new("ScreenGui")
+notifParent.Name = notif_name
 notifParent.ResetOnSpawn = false
 if syn and syn.protect_gui then syn.protect_gui(notifParent) end
 notifParent.Parent = target_gui
@@ -520,7 +528,7 @@ end
 
 
 function Library:create_ui()
-    local old_Nury = target_gui:FindFirstChild('Nury')
+    local old_Nury = target_gui:FindFirstChild(gui_name)
 
     if old_Nury then
         old_Nury:Destroy()
@@ -528,7 +536,7 @@ function Library:create_ui()
 
     local Nury = Instance.new('ScreenGui')
     Nury.ResetOnSpawn = false
-    Nury.Name = 'Nury_Bypass'
+    Nury.Name = gui_name
     Nury.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     if syn and syn.protect_gui then syn.protect_gui(Nury) end
     Nury.Parent = target_gui
