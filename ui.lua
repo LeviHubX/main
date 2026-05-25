@@ -769,7 +769,7 @@ function Library:create_ui()
             Size = UDim2.fromOffset(698, 479)
         }):Play()
 
-        AcrylicBlur.new(Container)
+        -- AcrylicBlur.new(Container) -- Disabled to bypass anti-cheat
         self._ui_loaded = true
     end
 
