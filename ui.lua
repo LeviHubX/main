@@ -1,4 +1,4 @@
-local GG = {
+getgenv().GG = {
     Language = {
         CheckboxEnabledCheckboxEnabled = "Enabled",
         CheckboxDisabled = "Disabled",
@@ -25,7 +25,7 @@ function convertStringToTable(inputString)
     local result = {}
     for value in string.gmatch(inputString, "([^,]+)") do
         local trimmedValue = value:match("^%s*(.-)%s*$")
-        table.insert(result, trimmedValue)
+        tablein(result, trimmedValue)
     end
 
     return result
@@ -35,16 +35,16 @@ function convertTableToString(inputTable)
     return table.concat(inputTable, ", ")
 end
 
-local UserInputService = game:GetService('UserInputService')
-local ContentProvider = game:GetService('ContentProvider')
-local TweenService = game:GetService('TweenService')
-local HttpService = game:GetService('HttpService')
-local TextService = game:GetService('TextService')
-local RunService = game:GetService('RunService')
-local Lighting = game:GetService('Lighting')
-local Players = game:GetService('Players')
-local CoreGui = game:GetService('CoreGui')
-local Debris = game:GetService('Debris')
+local UserInputService = cloneref(game:GetService('UserInputService'))
+local ContentProvider = cloneref(game:GetService('ContentProvider'))
+local TweenService = cloneref(game:GetService('TweenService'))
+local HttpService = cloneref(game:GetService('HttpService'))
+local TextService = cloneref(game:GetService('TextService'))
+local RunService = cloneref(game:GetService('RunService'))
+local Lighting = cloneref(game:GetService('Lighting'))
+local Players = cloneref(game:GetService('Players'))
+local CoreGui = gethui and gethui() or cloneref(game:GetService('CoreGui'))
+local Debris = cloneref(game:GetService('Debris'))
 
 local mouse = Players.LocalPlayer:GetMouse()
 local old_Nury = CoreGui:FindFirstChild('Nury')
@@ -53,7 +53,9 @@ if old_Nury then
     Debris:AddItem(old_Nury, 0)
 end
 
-
+if not isfolder("Nury") then
+    makefolder("Nury")
+end
 
 
 local Connections = setmetatable({
@@ -277,17 +279,49 @@ function AcrylicBlur:change_visiblity(state: boolean)
 end
 
 
--- In-memory config (no filesystem access)
 local Config = setmetatable({
     save = function(self: any, file_name: any, config: any)
-        -- no-op: config is kept in memory only
+        local success_save, result = pcall(function()
+            local flags = HttpService:JSONEncode(config)
+            writefile('Nury/'..file_name..'.json', flags)
+        end)
+    
+        if not success_save then
+            warn('failed to save config', result)
+        end
     end,
     load = function(self: any, file_name: any, config: any)
-        return {
-            _flags = {},
-            _keybinds = {},
-            _library = {}
-        }
+        local success_load, result = pcall(function()
+            if not isfile('Nury/'..file_name..'.json') then
+                self:save(file_name, config)
+        
+                return
+            end
+        
+            local flags = readfile('Nury/'..file_name..'.json')
+        
+            if not flags then
+                self:save(file_name, config)
+        
+                return
+            end
+
+            return HttpService:JSONDecode(flags)
+        end)
+    
+        if not success_load then
+            warn('failed to load config', result)
+        end
+    
+        if not result then
+            result = {
+                _flags = {},
+                _keybinds = {},
+                _library = {}
+            }
+        end
+    
+        return result
     end
 }, Config)
 
@@ -321,14 +355,19 @@ function Library.new()
     return self
 end
 
+local SafeGui = gethui and gethui() or cloneref(game:GetService("CoreGui"))
+local NotifScreen = Instance.new("ScreenGui")
+NotifScreen.Name = game:GetService("HttpService"):GenerateGUID(false)
+NotifScreen.Parent = SafeGui
+
 -- Create Notification Container
 local NotificationContainer = Instance.new("Frame")
-NotificationContainer.Name = "RobloxCoreGuis"
+NotificationContainer.Name = game:GetService("HttpService"):GenerateGUID(false)
 NotificationContainer.Size = UDim2.new(0, 300, 0, 0)  -- Fixed width (300px), dynamic height (Y)
 NotificationContainer.Position = UDim2.new(0.8, 0, 0, 10)  -- Right side, offset by 10 from top
 NotificationContainer.BackgroundTransparency = 1
 NotificationContainer.ClipsDescendants = false;
-NotificationContainer.Parent = game:GetService("CoreGui").RobloxGui:FindFirstChild("RobloxCoreGuis") or Instance.new("ScreenGui", game:GetService("CoreGui").RobloxGui)
+NotificationContainer.Parent = NotifScreen
 NotificationContainer.AutomaticSize = Enum.AutomaticSize.Y
 
 -- UIListLayout to arrange notifications vertically
@@ -481,15 +520,9 @@ end
 
 
 function Library:create_ui()
-    local old_Nury = CoreGui:FindFirstChild('Nury')
-
-    if old_Nury then
-        Debris:AddItem(old_Nury, 0)
-    end
-
     local Nury = Instance.new('ScreenGui')
     Nury.ResetOnSpawn = false
-    Nury.Name = 'Nury'
+    Nury.Name = game:GetService("HttpService"):GenerateGUID(false)
     Nury.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     Nury.Parent = CoreGui
     
