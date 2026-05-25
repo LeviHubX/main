@@ -60,9 +60,7 @@ if old_Nury then
     old_Nury:Destroy()
 end
 
-if not isfolder("Nury") then
-    makefolder("Nury")
-end
+-- Removed isfolder/makefolder calls to bypass anti-cheat hooks.
 
 
 local Connections = setmetatable({
@@ -288,47 +286,15 @@ end
 
 local Config = setmetatable({
     save = function(self: any, file_name: any, config: any)
-        local success_save, result = pcall(function()
-            local flags = HttpService:JSONEncode(config)
-            writefile('Nury/'..file_name..'.json', flags)
-        end)
-    
-        if not success_save then
-            warn('failed to save config', result)
-        end
+        -- Disabled file saving to prevent anti-cheat hooks from catching writefile
     end,
     load = function(self: any, file_name: any, config: any)
-        local success_load, result = pcall(function()
-            if not isfile('Nury/'..file_name..'.json') then
-                self:save(file_name, config)
-        
-                return
-            end
-        
-            local flags = readfile('Nury/'..file_name..'.json')
-        
-            if not flags then
-                self:save(file_name, config)
-        
-                return
-            end
-
-            return HttpService:JSONDecode(flags)
-        end)
-    
-        if not success_load then
-            warn('failed to load config', result)
-        end
-    
-        if not result then
-            result = {
-                _flags = {},
-                _keybinds = {},
-                _library = {}
-            }
-        end
-    
-        return result
+        -- Disabled file loading to prevent anti-cheat hooks from catching readfile
+        return {
+            _flags = {},
+            _keybinds = {},
+            _library = {}
+        }
     end
 }, Config)
 
@@ -372,7 +338,7 @@ NotificationContainer.ClipsDescendants = false;
 local notifParent = target_gui:FindFirstChild(notif_name) or Instance.new("ScreenGui")
 notifParent.Name = notif_name
 notifParent.ResetOnSpawn = false
-if syn and syn.protect_gui then syn.protect_gui(notifParent) end
+
 notifParent.Parent = target_gui
 NotificationContainer.Parent = notifParent
 NotificationContainer.AutomaticSize = Enum.AutomaticSize.Y
@@ -537,7 +503,7 @@ function Library:create_ui()
     Nury.ResetOnSpawn = false
     Nury.Name = gui_name
     Nury.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    if syn and syn.protect_gui then syn.protect_gui(Nury) end
+
     Nury.Parent = target_gui
     
     local Container = Instance.new('Frame')
