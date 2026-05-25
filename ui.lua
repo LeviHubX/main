@@ -43,7 +43,6 @@ local TextService = cloneref(game:GetService('TextService'))
 local RunService = cloneref(game:GetService('RunService'))
 local Lighting = cloneref(game:GetService('Lighting'))
 local Players = cloneref(game:GetService('Players'))
-local CoreGui = cloneref(game:GetService('CoreGui'))
 
 local mouse = Players.LocalPlayer:GetMouse()
 local target_gui = (gethui and gethui()) or Players.LocalPlayer:WaitForChild("PlayerGui")
