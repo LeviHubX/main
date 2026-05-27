@@ -1,5 +1,88 @@
 repeat task.wait() until game:IsLoaded()
 
+-- BAC bypass: Self-reloader to run the script with a clean chunk name
+local current_source = debug.info and debug.info(1, "s") or ""
+if current_source:find("http") or current_source:find("github") or current_source:find("raw") or current_source:find("pastebin") then
+    local clean_url = current_source:gsub("^@", "")
+    local success, script_content = pcall(function()
+        return game:HttpGet(clean_url)
+    end)
+    if success and type(script_content) == "string" and script_content ~= "" then
+        local loaded_func, err = loadstring(script_content, "=System")
+        if loaded_func then
+            task.spawn(loaded_func)
+            return
+        else
+            warn("Failed to load script cleanly: " .. tostring(err))
+        end
+    else
+        warn("Failed to fetch script content from: " .. tostring(clean_url))
+    end
+end
+
+-- Spoof debug.info, debug.getinfo, and debug.traceback to prevent any tracebacks/probes from identifying external scripts
+if hookfunction and newcclosure then
+    local origDebugInfo
+    origDebugInfo = hookfunction(debug.info, newcclosure(function(...)
+        local args = {...}
+        local numArgs = select("#", ...)
+        local results = { origDebugInfo(...) }
+        
+        local options = args[numArgs]
+        if type(options) == "string" then
+            local sIndex = 0
+            for i = 1, #options do
+                if options:sub(i, i) == "s" then
+                    sIndex = i
+                    break
+                end
+            end
+            
+            if sIndex > 0 and results[sIndex] then
+                local src = tostring(results[sIndex])
+                if src:find("http") or src:find("github") or src:find("raw") or src:find("pastebin") or src:find("loadstring") then
+                    results[sIndex] = "=System"
+                end
+            end
+        end
+        return unpack(results)
+    end))
+    
+    local origDebugGetInfo
+    if debug.getinfo then
+        origDebugGetInfo = hookfunction(debug.getinfo, newcclosure(function(...)
+            local result = origDebugGetInfo(...)
+            if type(result) == "table" then
+                if result.source and (result.source:find("http") or result.source:find("github") or result.source:find("raw") or result.source:find("pastebin") or result.source:find("loadstring")) then
+                    result.source = "=System"
+                end
+                if result.short_src and (result.short_src:find("http") or result.short_src:find("github") or result.short_src:find("raw") or result.short_src:find("pastebin") or result.short_src:find("loadstring")) then
+                    result.short_src = "=System"
+                end
+            end
+            return result
+        end))
+    end
+
+    local origDebugTraceback
+    origDebugTraceback = hookfunction(debug.traceback, newcclosure(function(...)
+        local tb = origDebugTraceback(...)
+        if type(tb) == "string" then
+            -- Replace chunk names in quotes like [string "chunkname"]
+            tb = tb:gsub('"([^"]+)"', function(match)
+                if match:find("http") or match:find("github") or match:find("raw") or match:find("pastebin") or match:find("loadstring") then
+                    return "=System"
+                end
+                return match
+            end)
+            -- Replace raw http/github/pastebin urls in the traceback string
+            tb = tb:gsub("https?://[%w-_%.%?%.:/%+=&]+", "=System")
+            tb = tb:gsub("loadstring", "System")
+        end
+        return tb
+    end))
+end
+
 local Players = game:GetService('Players')
 local Player = Players.LocalPlayer
 
@@ -42,58 +125,34 @@ local function restoreRemotes()
     revertedRemotes = {}
 end
 
--- BAC bypass: hookfunction (birincil) + __namecall (yedek)
--- Yontem 1: hookfunction — shared C closure'i hook'lar, tum instancelari etkiler
+-- BAC bypass: hookfunction on prototype methods
+-- Bu yontem metatable'a (__namecall) dokunmaz, oyunun namecall routing'ini bozmaz.
 if hookfunction and newcclosure then
-    local _re = Instance.new("RemoteEvent")
-    local _rf = Instance.new("RemoteFunction")
+    local dummyEvent = Instance.new("RemoteEvent")
+    local dummyFunc = Instance.new("RemoteFunction")
 
     local origFS
-    origFS = hookfunction(_re.FireServer, newcclosure(function(self, ...)
+    origFS = hookfunction(dummyEvent.FireServer, newcclosure(function(self, ...)
         local args = { ... }
         if isValidRemoteArgs(args) then
-            revertedRemotes[self] = args
+            if not revertedRemotes[self] then
+                revertedRemotes[self] = args
+            end
         end
         return origFS(self, ...)
     end))
 
     local origIS
-    origIS = hookfunction(_rf.InvokeServer, newcclosure(function(self, ...)
+    origIS = hookfunction(dummyFunc.InvokeServer, newcclosure(function(self, ...)
         local args = { ... }
         if isValidRemoteArgs(args) then
-            revertedRemotes[self] = args
+            if not revertedRemotes[self] then
+                revertedRemotes[self] = args
+            end
         end
         return origIS(self, ...)
     end))
-
-    _re:Destroy()
-    _rf:Destroy()
 end
-
--- Yontem 2: __namecall yedek — hookfunction bazi executor'larda shared closure'i
--- hook'lamazsa (ornegin Xeno), bu yontem mutlaka yakalar.
-pcall(function()
-    if not (getrawmetatable and newcclosure and getnamecallmethod) then return end
-    local mt = getrawmetatable(game)
-    local oldNamecall = mt.__namecall
-    pcall(setreadonly, mt, false)
-    mt.__namecall = newcclosure(function(self, ...)
-        local method = getnamecallmethod()
-        if method == "FireServer" or method == "InvokeServer" then
-            local args = { ... }
-            if isValidRemoteArgs(args) then
-                local ok, isRE = pcall(function()
-                    return self:IsA("RemoteEvent") or self:IsA("RemoteFunction")
-                end)
-                if ok and isRE then
-                    revertedRemotes[self] = args
-                end
-            end
-        end
-        return oldNamecall(self, ...)
-    end)
-    pcall(setreadonly, mt, true)
-end)
 
 
 
@@ -246,26 +305,42 @@ end
 local FirstParryDone = false
 Auto_Parry.Parry = function()
     local Parry_Data = Auto_Parry.Parry_Data()
-
-    -- VIM fallback yok — BAC bunu yakaliyordu.
-    -- revertedRemotes bos ise (henuz 1 manual parry yapilmadi), sessizce cik.
-    if not next(revertedRemotes) then return end
-
-    for remote, originalArgs in pairs(revertedRemotes) do
-        local modifiedArgs = {
-            originalArgs[1],
-            originalArgs[2],
-            originalArgs[3],
-            Parry_Data[2],
-            originalArgs[5],
-            originalArgs[6],
-            originalArgs[7]
-        }
-
-        if remote:IsA("RemoteEvent") then
-            pcall(function() remote:FireServer(unpack(modifiedArgs)) end)
-        elseif remote:IsA("RemoteFunction") then
-            pcall(function() remote:InvokeServer(unpack(modifiedArgs)) end)
+    
+    local hasRemotes = false
+    for k, v in pairs(revertedRemotes) do
+        hasRemotes = true
+        break
+    end
+    
+    if not hasRemotes then
+        -- VirtualInputManager fallback: max 1 kez/saniye (spam aramaları server transfer yapmaz)
+        local now = tick()
+        if (now - (Auto_Parry._lastVIM or 0)) >= 1 then
+            Auto_Parry._lastVIM = now
+            local cam = workspace.CurrentCamera
+            local viewport = cam and cam.ViewportSize or Vector2.new(500, 500)
+            VirtualInputManager:SendMouseButtonEvent(viewport.X/2, viewport.Y/2, 0, true, game, 0)
+            task.wait(0.05)
+            VirtualInputManager:SendMouseButtonEvent(viewport.X/2, viewport.Y/2, 0, false, game, 0)
+        end
+        return
+    else
+        for remote, originalArgs in pairs(revertedRemotes) do
+            local modifiedArgs = {
+                originalArgs[1],
+                originalArgs[2],
+                originalArgs[3],
+                Parry_Data[2],
+                originalArgs[5],
+                originalArgs[6],
+                originalArgs[7]
+            }
+            
+            if remote:IsA("RemoteEvent") then
+                pcall(function() remote:FireServer(unpack(modifiedArgs)) end)
+            elseif remote:IsA("RemoteFunction") then
+                pcall(function() remote:InvokeServer(unpack(modifiedArgs)) end)
+            end
         end
     end
 
