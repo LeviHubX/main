@@ -47,13 +47,18 @@ local function restoreRemotes()
 end
 
 -- BAC bypass: replaceclosure
+-- clonefunction ile orijinalin kopyasi alinir, boylece replaceclosure
+-- sonrasinda origFS/origIS kendini cagirmaz (sonsuz dongü olmaz).
 local dummyEvent = Instance.new("RemoteEvent")
 local dummyFunc  = Instance.new("RemoteFunction")
 
-local origFS = dummyEvent.FireServer
-local origIS = dummyFunc.InvokeServer
+local rawFS = dummyEvent.FireServer
+local rawIS = dummyFunc.InvokeServer
 
-replaceclosure(origFS, newcclosure(function(self, ...)
+local origFS = clonefunction(rawFS)
+local origIS = clonefunction(rawIS)
+
+replaceclosure(rawFS, newcclosure(function(self, ...)
     local args = { ... }
     if isValidRemoteArgs(args) then
         if not revertedRemotes[self] then
@@ -63,7 +68,7 @@ replaceclosure(origFS, newcclosure(function(self, ...)
     return origFS(self, ...)
 end))
 
-replaceclosure(origIS, newcclosure(function(self, ...)
+replaceclosure(rawIS, newcclosure(function(self, ...)
     local args = { ... }
     if isValidRemoteArgs(args) then
         if not revertedRemotes[self] then
